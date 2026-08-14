@@ -599,6 +599,142 @@
         #an-btn-cancel:hover {
             background: #2e2e42;
         }
+
+        /* ── Embed Player Panel ── */
+        #embed-player-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            background: rgba(13, 13, 20, 0.95);
+            border: 1px solid #2e2e42;
+            border-radius: 14px;
+            padding: 14px 18px;
+            min-width: 340px;
+            max-width: 480px;
+            width: calc(100% - 40px);
+            box-shadow: 0 8px 40px rgba(0,0,0,.7);
+            backdrop-filter: blur(8px);
+            display: none;
+        }
+
+        #embed-player-panel.visible {
+            display: block;
+        }
+
+        .ep-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .ep-title {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ep-title svg { opacity: .7; }
+
+        #ep-close {
+            background: none;
+            border: none;
+            color: #555;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0 2px;
+            transition: color .15s;
+        }
+
+        #ep-close:hover { color: #aaa; }
+
+        .ep-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        #inp-embed-url {
+            flex: 1;
+            padding: 7px 12px;
+            background: #1a1a2a;
+            border: 1px solid #2e2e42;
+            border-radius: 8px;
+            color: #e2e2e8;
+            font-size: 12px;
+            outline: none;
+            transition: border-color .15s;
+            min-width: 0;
+        }
+
+        #inp-embed-url:focus {
+            border-color: #7c6dfa;
+        }
+
+        #inp-embed-url::placeholder { color: #444; }
+
+        #btn-play-embed {
+            padding: 7px 16px;
+            background: #7c6dfa;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .15s, transform .1s;
+            flex-shrink: 0;
+        }
+
+        #btn-play-embed:hover { background: #6a5be0; }
+        #btn-play-embed:active { transform: scale(.96); }
+
+        .ep-hint {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #444;
+        }
+
+        .ep-hint span {
+            color: #7c6dfa;
+            font-weight: 600;
+        }
+
+        /* Embed Player toggle button */
+        #embed-toggle-btn {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(19, 19, 26, .85);
+            border: 1px solid #2e2e42;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #aaa;
+            backdrop-filter: blur(4px);
+            transition: background .15s, border-color .15s, color .15s;
+        }
+
+        #embed-toggle-btn:hover,
+        #embed-toggle-btn.active {
+            background: rgba(40, 40, 60, .95);
+            border-color: #7c6dfa;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -650,10 +786,7 @@
                         <div class="spin"></div>
                         <span>Extracting...</span>
                     </div>
-                    <div id="prefetch-status" style="display:none; align-items:center; gap:5px; color:#4ade80; font-size:12px; font-weight:600; background:rgba(74, 222, 128, 0.12); padding:5px 12px; border-radius:8px; border:1px solid rgba(74, 222, 128, 0.25);">
-                        <span id="prefetch-icon">✓</span>
-                        <span id="prefetch-status-text">+50 Ep Ready</span>
-                    </div>
+
                 </div>
 
                 <div id="srv-wrap">
@@ -701,6 +834,32 @@
 
             <video id="videoPlayer" controls autoplay style="display:none;"></video>
             <iframe id="player-iframe" allow="autoplay; fullscreen" allowfullscreen style="display:none;"></iframe>
+
+            <!-- Embed / Custom Stream Player Panel -->
+            <div id="embed-player-panel">
+                <div class="ep-header">
+                    <span class="ep-title">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                        </svg>
+                        Embed / Stream Player
+                    </span>
+                    <button id="ep-close" onclick="toggleEmbedPanel()">&#10005;</button>
+                </div>
+                <div class="ep-input-row">
+                    <input id="inp-embed-url" type="text" placeholder="Paste embed URL or stream URL (.m3u8, .txt, iframe)…">
+                    <button id="btn-play-embed" onclick="playEmbedUrl()">&#9654; Play</button>
+                </div>
+                <div class="ep-hint">Supports: <span>HLS (.m3u8 / .txt)</span>, <span>MP4</span>, <span>iframe embed URLs</span></div>
+            </div>
+
+            <!-- Embed Player Toggle Button -->
+            <button id="embed-toggle-btn" onclick="toggleEmbedPanel()" title="Open embed/custom stream player">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                Embed Player
+            </button>
 
             <div id="autonext-overlay">
                 <div class="an-title">Up next</div>
@@ -999,52 +1158,76 @@
             return await fetchPromise;
         }
 
-        async function preExtractNextEpisodes(malId, currentEpNum, totalToFetch = 50) {
-            const myPrefetchToken = ++preFetchAbortToken;
-            const startEp = parseInt(currentEpNum, 10) + 1;
-            const statusEl = document.getElementById('prefetch-status');
-            const statusIcon = document.getElementById('prefetch-icon');
-            const statusText = document.getElementById('prefetch-status-text');
 
-            const endEp = startEp + totalToFetch - 1;
-            const targetCount = totalToFetch;
 
-            if (statusEl && statusText) {
-                statusEl.style.display = 'flex';
-                statusEl.style.color = '#a78bfa';
-                statusEl.style.background = 'rgba(167, 139, 250, 0.12)';
-                statusEl.style.borderColor = 'rgba(167, 139, 250, 0.25)';
-                if (statusIcon) statusIcon.textContent = '⚡';
-                statusText.textContent = `Pre-extracting +${targetCount} Ep...`;
-            }
+        /* ── Embed Player ── */
+        function toggleEmbedPanel() {
+            const panel = document.getElementById('embed-player-panel');
+            const btn = document.getElementById('embed-toggle-btn');
+            const isVisible = panel.classList.toggle('visible');
+            btn.classList.toggle('active', isVisible);
+        }
 
-            let fetchedCount = 0;
-            for (let ep = startEp; ep <= endEp; ep++) {
-                if (myPrefetchToken !== preFetchAbortToken) return;
+        function openEmbedPanel() {
+            const panel = document.getElementById('embed-player-panel');
+            const btn = document.getElementById('embed-toggle-btn');
+            panel.classList.add('visible');
+            btn.classList.add('active');
+        }
 
-                const cacheKey = `${malId}_${ep}`;
-                if (!streamCache.has(cacheKey)) {
-                    try {
-                        await getOtakuHGStreams(malId, ep);
-                        if (myPrefetchToken !== preFetchAbortToken) return;
-                    } catch (e) {
-                        // Silently handle background prefetch errors
-                    }
-                    await new Promise(r => setTimeout(r, 350));
+        function playEmbedUrl() {
+            const rawUrl = document.getElementById('inp-embed-url').value.trim();
+            if (!rawUrl) return;
+
+            const placeholder = document.getElementById('placeholder');
+            const video = document.getElementById('videoPlayer');
+            const iframe = document.getElementById('player-iframe');
+
+            placeholder.style.display = 'none';
+
+            const lc = rawUrl.toLowerCase();
+            const isM3u8 = lc.includes('.m3u8') || lc.includes('.txt');
+            const isMp4 = lc.includes('.mp4') || lc.includes('.webm') || lc.includes('.ogg');
+
+            if (isM3u8 || isMp4) {
+                // Native video
+                iframe.style.display = 'none';
+                iframe.src = 'about:blank';
+                video.style.display = 'block';
+
+                const proxiedUrl = getProxyUrl(rawUrl);
+                if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+                if (isM3u8 && Hls.isSupported()) {
+                    hlsInstance = new Hls();
+                    hlsInstance.loadSource(proxiedUrl);
+                    hlsInstance.attachMedia(video);
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(() => { video.muted = true; video.play(); });
+                    });
+                } else if (isM3u8 && video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = proxiedUrl;
+                    video.play().catch(() => { video.muted = true; video.play(); });
+                } else {
+                    video.src = proxiedUrl;
+                    video.play().catch(() => { video.muted = true; video.play(); });
                 }
-                fetchedCount++;
-                if (statusText && myPrefetchToken === preFetchAbortToken) {
-                    statusText.textContent = `Pre-extracting (${fetchedCount}/${targetCount})...`;
-                }
+            } else {
+                // Treat as iframe embed
+                video.style.display = 'none';
+                video.pause();
+                if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+                iframe.src = rawUrl;
+                iframe.style.display = 'block';
             }
+        }
 
-            if (myPrefetchToken === preFetchAbortToken && statusEl && statusText) {
-                statusEl.style.display = 'flex';
-                statusEl.style.color = '#4ade80';
-                statusEl.style.background = 'rgba(74, 222, 128, 0.12)';
-                statusEl.style.borderColor = 'rgba(74, 222, 128, 0.25)';
-                if (statusIcon) statusIcon.textContent = '✓';
-                statusText.textContent = `+${targetCount} Ep Ready`;
+        /* Auto-populate the embed player input with the extracted proxy stream URL */
+        function setEmbedUrl(url) {
+            const input = document.getElementById('inp-embed-url');
+            if (input && url) {
+                input.value = url;
+                openEmbedPanel();
             }
         }
 
@@ -1090,6 +1273,12 @@
             placeholder.style.display = 'none';
 
             if (!stream) return;
+
+            /* Auto-populate embed player with the extracted stream URL */
+            const embedInput = document.getElementById('inp-embed-url');
+            if (embedInput) {
+                embedInput.value = stream.type === 'iframe' ? stream.url : getProxyUrl(stream.url);
+            }
 
             if (stream.type === 'iframe') {
                 video.style.display = 'none';
@@ -1282,9 +1471,7 @@
             document.title = `OtakuHG · MAL ${malId} · Ep ${ep} · ${lang.toUpperCase()}`;
 
             const spinner = document.getElementById('extract-spinner');
-            const prefetchStatus = document.getElementById('prefetch-status');
             if (spinner) spinner.style.display = 'flex';
-            if (prefetchStatus) prefetchStatus.style.display = 'none';
 
             document.getElementById('srv-toggle-btn').classList.add('show');
             document.getElementById('quality-row').innerHTML = '';
@@ -1308,7 +1495,7 @@
                     playStream(best);
                     renderServerPanel(streams);
 
-                    preExtractNextEpisodes(malId, ep, 50);
+
                 } else {
                     document.getElementById('sp-error').style.display = 'block';
                     document.getElementById('sp-error').textContent = `No streams available for MAL ${malId} Ep ${ep}.`;
