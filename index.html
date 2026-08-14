@@ -899,7 +899,8 @@
             if (!url) return '';
             if (url.startsWith('https://anivexa.onrender.com/proxy')) return url;
             const cleanUrl = url.split('?')[0].toLowerCase();
-            if (cleanUrl.endsWith('.txt')) {
+            // Proxy all HLS stream URLs (.txt master playlists and .m3u8 variant streams)
+            if (cleanUrl.endsWith('.txt') || cleanUrl.endsWith('.m3u8')) {
                 return `https://anivexa.onrender.com/proxy?url=${encodeURIComponent(url)}&referer=https://otakuhg.site/`;
             }
             return url;
@@ -1185,41 +1186,18 @@
 
             placeholder.style.display = 'none';
 
-            const lc = rawUrl.toLowerCase();
-            const isM3u8 = lc.includes('.m3u8') || lc.includes('.txt');
-            const isMp4 = lc.includes('.mp4') || lc.includes('.webm') || lc.includes('.ogg');
+            // Hide native video — everything plays in iframe
+            video.style.display = 'none';
+            video.pause();
+            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
 
-            if (isM3u8 || isMp4) {
-                // Native video
-                iframe.style.display = 'none';
-                iframe.src = 'about:blank';
-                video.style.display = 'block';
+            // Apply proxy for HLS/stream URLs; leave embed iframe URLs as-is
+            const lc = rawUrl.toLowerCase().split('?')[0];
+            const needsProxy = lc.endsWith('.m3u8') || lc.endsWith('.txt') || lc.endsWith('.mp4');
+            const finalUrl = needsProxy ? getProxyUrl(rawUrl) : rawUrl;
 
-                const proxiedUrl = getProxyUrl(rawUrl);
-                if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-
-                if (isM3u8 && Hls.isSupported()) {
-                    hlsInstance = new Hls();
-                    hlsInstance.loadSource(proxiedUrl);
-                    hlsInstance.attachMedia(video);
-                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                        video.play().catch(() => { video.muted = true; video.play(); });
-                    });
-                } else if (isM3u8 && video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = proxiedUrl;
-                    video.play().catch(() => { video.muted = true; video.play(); });
-                } else {
-                    video.src = proxiedUrl;
-                    video.play().catch(() => { video.muted = true; video.play(); });
-                }
-            } else {
-                // Treat as iframe embed
-                video.style.display = 'none';
-                video.pause();
-                if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-                iframe.src = rawUrl;
-                iframe.style.display = 'block';
-            }
+            iframe.src = finalUrl;
+            iframe.style.display = 'block';
         }
 
         /* Auto-populate the embed player input with the extracted proxy stream URL */
@@ -1274,45 +1252,32 @@
 
             if (!stream) return;
 
-            /* Auto-populate embed player with the extracted stream URL */
-            const embedInput = document.getElementById('inp-embed-url');
-            if (embedInput) {
-                embedInput.value = stream.type === 'iframe' ? stream.url : getProxyUrl(stream.url);
-            }
-
-            if (stream.type === 'iframe') {
-                video.style.display = 'none';
-                video.pause();
-                iframe.src = stream.url;
-                iframe.style.display = 'block';
-                return;
-            }
-
-            iframe.style.display = 'none';
-            iframe.src = 'about:blank';
-            video.style.display = 'block';
-
-            const proxiedUrl = getProxyUrl(stream.url);
-
+            // Always hide native video — we play everything through the iframe
+            video.style.display = 'none';
+            video.pause();
             if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
 
-            if (proxiedUrl.includes('.m3u8') || proxiedUrl.includes('.txt') || (stream.url && stream.url.includes('.txt'))) {
-                if (Hls.isSupported()) {
-                    hlsInstance = new Hls();
-                    hlsInstance.loadSource(proxiedUrl);
-                    hlsInstance.attachMedia(video);
-                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                        video.play().catch(() => { video.muted = true; video.play(); });
-                    });
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = proxiedUrl;
-                    video.play().catch(() => { video.muted = true; video.play(); });
-                }
+            // Build the final URL to load in the iframe
+            let finalUrl;
+            if (stream.type === 'iframe') {
+                // Already an embed URL — use as-is
+                finalUrl = stream.url;
             } else {
-                video.src = proxiedUrl;
-                video.play().catch(() => { video.muted = true; video.play(); });
+                // HLS/MP4 stream — wrap through proxy
+                finalUrl = getProxyUrl(stream.url);
             }
 
+            // Auto-populate embed player input and open it
+            const embedInput = document.getElementById('inp-embed-url');
+            if (embedInput) embedInput.value = finalUrl;
+            openEmbedPanel();
+
+            // Load into the main iframe and show it
+            iframe.src = finalUrl;
+            iframe.style.display = 'block';
+
+            // Note: onended for auto-next is wired to the iframe via message if needed
+            // For now attach it to the video element as a fallback listener
             video.onended = () => {
                 const malId = document.getElementById('inp-mal').value.trim();
                 const ep = document.getElementById('inp-ep').value.trim();
