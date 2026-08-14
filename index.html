@@ -1,65 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OtakuHG MegaPlay Player</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>OtakuHG</title>
     <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html,
-        body {
-            width: 100%;
-            height: 100%;
+        html, body {
             background: #0a0a0f;
             font-family: 'Segoe UI', system-ui, sans-serif;
             color: #e2e2e8;
-            overflow: hidden;
-        }
-
-        #app {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
+            min-height: 100%;
         }
 
         #topbar {
-            position: relative;
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 0 14px;
+            padding: 10px 14px;
             background: #13131a;
             border-bottom: 1px solid #222230;
-            flex-shrink: 0;
             flex-wrap: wrap;
-            overflow: visible;
-        }
-
-        #topbar-inner {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            width: 100%;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height .28s ease, padding .28s ease;
-            padding: 0;
-        }
-
-        #topbar-inner.open {
-            max-height: 160px;
-            padding: 8px 0;
         }
 
         .brand {
@@ -97,9 +59,7 @@
             transition: border-color .15s;
         }
 
-        .field-group input:focus {
-            border-color: #7c6dfa;
-        }
+        .field-group input:focus { border-color: #7c6dfa; }
 
         #lang-toggle {
             display: flex;
@@ -121,10 +81,7 @@
             transition: background .15s, color .15s;
         }
 
-        #lang-toggle button.active {
-            background: #7c6dfa;
-            color: #fff;
-        }
+        #lang-toggle button.active { background: #7c6dfa; color: #fff; }
 
         #autonext-wrap {
             display: flex;
@@ -141,1439 +98,614 @@
             white-space: nowrap;
         }
 
-        .switch {
-            position: relative;
-            width: 36px;
-            height: 20px;
-            flex-shrink: 0;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        .switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            inset: 0;
-            background: #2e2e42;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background .2s;
+            position: absolute; inset: 0;
+            background: #2e2e42; border-radius: 20px;
+            cursor: pointer; transition: background .2s;
         }
-
         .slider::before {
             content: '';
             position: absolute;
-            width: 14px;
-            height: 14px;
-            left: 3px;
-            top: 3px;
-            background: #fff;
-            border-radius: 50%;
+            width: 14px; height: 14px;
+            left: 3px; top: 3px;
+            background: #fff; border-radius: 50%;
             transition: transform .2s;
         }
+        .switch input:checked + .slider { background: #7c6dfa; }
+        .switch input:checked + .slider::before { transform: translateX(16px); }
 
-        .switch input:checked+.slider {
-            background: #7c6dfa;
-        }
-
-        .switch input:checked+.slider::before {
-            transform: translateX(16px);
-        }
-
-        .ctrl-btns {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+        .ctrl-btns { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
         .bar-btn {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            display: flex; align-items: center; gap: 5px;
             padding: 5px 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
+            border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; white-space: nowrap;
             transition: background .15s, transform .1s;
         }
+        .bar-btn:active { transform: scale(.96); }
 
-        .bar-btn:active {
-            transform: scale(.96);
-        }
-
-        #btn-prev-bar,
-        #btn-next-bar {
-            background: #1e1e2e;
-            color: #aaa;
+        #btn-prev-bar, #btn-next-bar {
+            background: #1e1e2e; color: #aaa;
             border: 1px solid #2e2e42;
         }
-
-        #btn-prev-bar:hover,
-        #btn-next-bar:hover {
-            background: rgba(124, 109, 250, .18);
-            border-color: #7c6dfa;
-            color: #fff;
+        #btn-prev-bar:hover, #btn-next-bar:hover {
+            background: rgba(124,109,250,.18);
+            border-color: #7c6dfa; color: #fff;
         }
+        #btn-go { background: #7c6dfa; color: #fff; }
+        #btn-go:hover { background: #6a5be0; }
 
-        #btn-go {
-            background: #7c6dfa;
-            color: #fff;
-        }
-
-        #btn-go:hover {
-            background: #6a5be0;
-        }
-
-        #player-wrap {
-            flex: 1;
-            position: relative;
-            background: #000;
-            overflow: hidden;
-        }
-
-        #player-wrap iframe,
-        #player-wrap video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-            z-index: 1;
-            object-fit: contain;
-        }
-
-        #placeholder {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #444;
-            z-index: 0;
-        }
-
-        #placeholder svg {
-            opacity: .3;
-        }
-
-        #placeholder p {
-            font-size: 14px;
-        }
-
-        #placeholder .hint {
-            font-size: 12px;
-            color: #333;
-        }
-
-        #toggle-bar-btn {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            z-index: 20;
-            width: 32px;
-            height: 32px;
-            background: rgba(19, 19, 26, .85);
-            border: 1px solid #2e2e42;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-            transition: background .15s, border-color .15s;
-        }
-
-        #toggle-bar-btn:hover {
-            background: rgba(40, 40, 60, .95);
-            border-color: #7c6dfa;
-        }
-
-        #toggle-bar-btn svg {
-            display: block;
-            transition: transform .25s ease;
-        }
-
-        #toggle-bar-btn.open svg {
-            transform: rotate(180deg);
-        }
-
-        #srv-wrap {
-            position: relative;
-            margin-left: auto;
-            flex-shrink: 0;
-        }
-
-        #srv-toggle-btn {
+        #extract-spinner {
             display: none;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 14px;
-            background: #1e1e2e;
-            border: 1px solid #2e2e42;
-            border-radius: 8px;
-            color: #aaa;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .15s;
-            white-space: nowrap;
+            align-items: center; gap: 6px;
+            color: #a78bfa; font-size: 12px; font-weight: 600;
+            background: rgba(167,139,250,.12);
+            padding: 5px 12px; border-radius: 8px;
+            border: 1px solid rgba(167,139,250,.25);
         }
-
-        #srv-toggle-btn.show {
-            display: flex;
-        }
-
-        #srv-toggle-btn:hover,
-        #srv-toggle-btn.open {
-            border-color: #7c6dfa;
-            color: #fff;
-            background: rgba(124, 109, 250, .18);
-        }
-
-        #server-panel {
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            z-index: 100;
-            background: #13131a;
-            border: 1px solid #2e2e42;
-            border-radius: 12px;
-            padding: 12px 14px;
-            min-width: 260px;
-            max-width: 340px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, .6);
-            display: none;
-        }
-
-        #server-panel.visible {
-            display: block;
-        }
-
-        .sp-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .sp-title {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-        }
-
-        #sp-close {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            padding: 0 2px;
-        }
-
-        #sp-close:hover {
-            color: #aaa;
-        }
-
-        #quality-row {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .q-pill {
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            border: 1px solid #2e2e42;
-            background: #1e1e2e;
-            color: #888;
-            transition: all .15s;
-        }
-
-        .q-pill.active {
-            background: #7c6dfa;
-            border-color: #7c6dfa;
-            color: #fff;
-        }
-
-        .q-pill:hover:not(.active):not(.unavail) {
-            border-color: #7c6dfa;
-            color: #ccc;
-        }
-
-        .q-pill.unavail {
-            opacity: .3;
-            cursor: default;
-            pointer-events: none;
-        }
-
-        #server-list {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            max-height: 220px;
-            overflow-y: auto;
-        }
-
-        #server-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        #server-list::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #server-list::-webkit-scrollbar-thumb {
-            background: #2e2e42;
-            border-radius: 4px;
-        }
-
-        .srv-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 7px 10px;
-            border-radius: 8px;
-            border: 1px solid #2e2e42;
-            background: #1a1a26;
-            color: #ccc;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .15s;
-            text-align: left;
-            width: 100%;
-        }
-
-        .srv-btn:hover {
-            background: rgba(124, 109, 250, .18);
-            border-color: #7c6dfa;
-            color: #fff;
-        }
-
-        .srv-btn.active {
-            background: rgba(124, 109, 250, .28);
-            border-color: #7c6dfa;
-            color: #fff;
-        }
-
-        .srv-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background: #2e2e42;
-            color: #777;
-            margin-left: 6px;
-            flex-shrink: 0;
-        }
-
-        .srv-btn.active .srv-badge {
-            background: #7c6dfa;
-            color: #fff;
-        }
-
-        #sp-loading {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #666;
-            font-size: 12px;
-            padding: 8px 0;
-        }
-
         .spin {
-            width: 14px;
-            height: 14px;
-            border: 2px solid #2e2e42;
-            border-top-color: #7c6dfa;
+            width: 14px; height: 14px;
+            border: 2px solid #2e2e42; border-top-color: #7c6dfa;
             border-radius: 50%;
-            animation: spin .7s linear infinite;
-            flex-shrink: 0;
+            animation: spin .7s linear infinite; flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Results area ── */
+        #results {
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        #sp-error {
-            color: #f87171;
-            font-size: 12px;
-            padding: 4px 0;
-        }
-
-        #autonext-overlay {
-            display: none;
-            position: absolute;
-            bottom: 28px;
-            right: 28px;
-            background: rgba(10, 10, 15, .9);
-            border: 1px solid #2e2e42;
-            border-radius: 14px;
-            padding: 14px 20px;
-            min-width: 220px;
-            z-index: 30;
-            backdrop-filter: blur(6px);
-        }
-
-        .an-title {
+        #results-label {
             font-size: 11px;
-            color: #888;
+            color: #555;
             text-transform: uppercase;
             letter-spacing: .07em;
-            margin-bottom: 6px;
         }
 
-        .an-ep {
-            font-size: 15px;
-            font-weight: 700;
-            color: #e2e2e8;
-            margin-bottom: 10px;
+        #error-msg {
+            color: #f87171;
+            font-size: 13px;
+            display: none;
         }
 
-        #an-bar-bg {
-            width: 100%;
-            height: 4px;
-            background: #2e2e42;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        #an-bar {
-            height: 100%;
-            width: 100%;
-            background: #7c6dfa;
-            border-radius: 4px;
-            transform-origin: left;
-            transition: transform linear;
-        }
-
-        .an-btns {
+        .stream-card {
+            background: #13131a;
+            border: 1px solid #222230;
+            border-radius: 10px;
+            padding: 12px 14px;
             display: flex;
+            flex-direction: column;
             gap: 8px;
         }
 
-        .an-btns button {
-            flex: 1;
-            padding: 6px 0;
-            border: none;
-            border-radius: 7px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .15s;
-        }
-
-        #an-btn-now {
-            background: #7c6dfa;
-            color: #fff;
-        }
-
-        #an-btn-now:hover {
-            background: #6a5be0;
-        }
-
-        #an-btn-cancel {
-            background: #1e1e2e;
-            color: #aaa;
-            border: 1px solid #2e2e42;
-        }
-
-        #an-btn-cancel:hover {
-            background: #2e2e42;
-        }
-
-        /* ── Embed Player Panel ── */
-        #embed-player-panel {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 40;
-            background: rgba(13, 13, 20, 0.95);
-            border: 1px solid #2e2e42;
-            border-radius: 14px;
-            padding: 14px 18px;
-            min-width: 340px;
-            max-width: 480px;
-            width: calc(100% - 40px);
-            box-shadow: 0 8px 40px rgba(0,0,0,.7);
-            backdrop-filter: blur(8px);
-            display: none;
-        }
-
-        #embed-player-panel.visible {
-            display: block;
-        }
-
-        .ep-header {
+        .stream-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .ep-title {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .ep-title svg { opacity: .7; }
-
-        #ep-close {
-            background: none;
-            border: none;
-            color: #555;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            padding: 0 2px;
-            transition: color .15s;
-        }
-
-        #ep-close:hover { color: #aaa; }
-
-        .ep-input-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        #inp-embed-url {
-            flex: 1;
-            padding: 7px 12px;
-            background: #1a1a2a;
-            border: 1px solid #2e2e42;
-            border-radius: 8px;
-            color: #e2e2e8;
-            font-size: 12px;
-            outline: none;
-            transition: border-color .15s;
-            min-width: 0;
-        }
-
-        #inp-embed-url:focus {
-            border-color: #7c6dfa;
-        }
-
-        #inp-embed-url::placeholder { color: #444; }
-
-        #btn-play-embed {
-            padding: 7px 16px;
-            background: #7c6dfa;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
+        .stream-name {
+            font-size: 13px;
             font-weight: 700;
+            color: #c4b8ff;
+        }
+
+        .stream-badges {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: #1e1e2e;
+            border: 1px solid #2e2e42;
+            color: #777;
+        }
+
+        .badge.lang-dub { border-color: #7c6dfa; color: #a78bfa; }
+        .badge.lang-sub { border-color: #22d3ee; color: #67e8f9; }
+        .badge.quality { border-color: #4ade80; color: #86efac; }
+
+        .stream-url-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stream-url {
+            flex: 1;
+            font-size: 11px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: #7c6dfa;
+            background: #0d0d16;
+            border: 1px solid #1e1e2e;
+            border-radius: 6px;
+            padding: 6px 10px;
+            word-break: break-all;
+            white-space: pre-wrap;
+            user-select: all;
+        }
+
+        .copy-btn {
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #1e1e2e;
+            border: 1px solid #2e2e42;
+            border-radius: 6px;
+            color: #888;
             cursor: pointer;
             white-space: nowrap;
-            transition: background .15s, transform .1s;
+            transition: all .15s;
             flex-shrink: 0;
         }
-
-        #btn-play-embed:hover { background: #6a5be0; }
-        #btn-play-embed:active { transform: scale(.96); }
-
-        .ep-hint {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #444;
-        }
-
-        .ep-hint span {
-            color: #7c6dfa;
-            font-weight: 600;
-        }
-
-        /* Embed Player toggle button */
-        #embed-toggle-btn {
-            position: absolute;
-            bottom: 14px;
-            right: 14px;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background: rgba(19, 19, 26, .85);
-            border: 1px solid #2e2e42;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: #aaa;
-            backdrop-filter: blur(4px);
-            transition: background .15s, border-color .15s, color .15s;
-        }
-
-        #embed-toggle-btn:hover,
-        #embed-toggle-btn.active {
-            background: rgba(40, 40, 60, .95);
-            border-color: #7c6dfa;
-            color: #fff;
-        }
+        .copy-btn:hover { border-color: #7c6dfa; color: #fff; background: rgba(124,109,250,.18); }
+        .copy-btn.copied { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,.1); }
     </style>
 </head>
-
 <body>
-    <div id="app">
-        <div id="topbar">
-            <div id="topbar-inner">
-                <span class="brand">&#9654; OtakuHG</span>
 
-                <div class="field-group">
-                    <label>MAL ID</label>
-                    <input id="inp-mal" type="number" placeholder="e.g. 21" min="1">
-                </div>
-                <div class="field-group">
-                    <label>Episode</label>
-                    <input id="inp-ep" type="number" placeholder="e.g. 1" min="1">
-                </div>
+<div id="topbar">
+    <span class="brand">&#9654; OtakuHG</span>
 
-                <div id="lang-toggle">
-                    <button id="btn-dub" class="active" onclick="setLang('dub')">DUB</button>
-                    <button id="btn-sub" onclick="setLang('sub')">SUB</button>
-                </div>
-
-                <div id="autonext-wrap">
-                    <span>Auto-Next</span>
-                    <label class="switch">
-                        <input type="checkbox" id="chk-autonext" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="ctrl-btns">
-                    <button class="bar-btn" id="btn-prev-bar" onclick="goPrevEp()">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                        Prev
-                    </button>
-                    <button class="bar-btn" id="btn-go" onclick="loadPlayer()">&#9654; Play</button>
-                    <button class="bar-btn" id="btn-next-bar" onclick="goNextEp()">
-                        Next
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                    </button>
-                    <div id="extract-spinner" style="display:none; align-items:center; gap:6px; color:#a78bfa; font-size:12px; font-weight:600; background:rgba(167, 139, 250, 0.12); padding:5px 12px; border-radius:8px; border:1px solid rgba(167, 139, 250, 0.25);">
-                        <div class="spin"></div>
-                        <span>Extracting...</span>
-                    </div>
-
-                </div>
-
-                <div id="srv-wrap">
-                    <button id="srv-toggle-btn" onclick="toggleServerPanel()">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="3" width="20" height="4" rx="1" />
-                            <rect x="2" y="10" width="20" height="4" rx="1" />
-                            <rect x="2" y="17" width="20" height="4" rx="1" />
-                        </svg>
-                        Servers
-                    </button>
-                    <div id="server-panel">
-                        <div class="sp-row">
-                            <span class="sp-title">Servers &amp; Quality</span>
-                            <button id="sp-close" onclick="toggleServerPanel()">&#10005;</button>
-                        </div>
-                        <div id="quality-row"></div>
-                        <div id="sp-loading" style="display:none">
-                            <div class="spin"></div> Fetching streams&#8230;
-                        </div>
-                        <div id="sp-error" style="display:none"></div>
-                        <div id="server-list"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="player-wrap">
-            <button id="toggle-bar-btn" onclick="toggleBar()" title="Toggle controls">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#aaa" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 8 11 13 6" />
-                </svg>
-            </button>
-
-            <div id="placeholder">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                    <circle cx="12" cy="12" r="10" />
-                    <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
-                </svg>
-                <p>Click &#8964; top-right to open controls</p>
-                <p class="hint">Enter MAL ID + Episode then press Play</p>
-            </div>
-
-            <video id="videoPlayer" controls autoplay style="display:none;"></video>
-            <iframe id="player-iframe" allow="autoplay; fullscreen" allowfullscreen style="display:none;"></iframe>
-
-            <!-- Embed / Custom Stream Player Panel -->
-            <div id="embed-player-panel">
-                <div class="ep-header">
-                    <span class="ep-title">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                        </svg>
-                        Embed / Stream Player
-                    </span>
-                    <button id="ep-close" onclick="toggleEmbedPanel()">&#10005;</button>
-                </div>
-                <div class="ep-input-row">
-                    <input id="inp-embed-url" type="text" placeholder="Paste embed URL or stream URL (.m3u8, .txt, iframe)…">
-                    <button id="btn-play-embed" onclick="playEmbedUrl()">&#9654; Play</button>
-                </div>
-                <div class="ep-hint">Supports: <span>HLS (.m3u8 / .txt)</span>, <span>MP4</span>, <span>iframe embed URLs</span></div>
-            </div>
-
-            <!-- Embed Player Toggle Button -->
-            <button id="embed-toggle-btn" onclick="toggleEmbedPanel()" title="Open embed/custom stream player">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                </svg>
-                Embed Player
-            </button>
-
-            <div id="autonext-overlay">
-                <div class="an-title">Up next</div>
-                <div class="an-ep" id="an-ep-label">Episode &#8212;</div>
-                <div id="an-bar-bg">
-                    <div id="an-bar"></div>
-                </div>
-                <div class="an-btns">
-                    <button id="an-btn-now" onclick="goNextNow()">Play Now</button>
-                    <button id="an-btn-cancel" onclick="cancelAutoNext()">Cancel</button>
-                </div>
-            </div>
-        </div>
+    <div class="field-group">
+        <label>MAL ID</label>
+        <input id="inp-mal" type="number" placeholder="e.g. 21" min="1">
+    </div>
+    <div class="field-group">
+        <label>Episode</label>
+        <input id="inp-ep" type="number" placeholder="e.g. 1" min="1">
     </div>
 
-    <script>
-        const BASE_DATASET_URL = "https://raw.githubusercontent.com/srtfile/hi_anime_streams_scraper/refs/heads/main/";
-        const DATASET_FILENAMES = ["hianime_streams_list.json"].concat(
-            Array.from({ length: 36 }, (_, i) => `hianime_streams_list_${i + 2}.json`)
+    <div id="lang-toggle">
+        <button id="btn-dub" class="active" onclick="setLang('dub')">DUB</button>
+        <button id="btn-sub" onclick="setLang('sub')">SUB</button>
+    </div>
+
+    <div id="autonext-wrap">
+        <span>Auto-Next</span>
+        <label class="switch">
+            <input type="checkbox" id="chk-autonext" checked>
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="ctrl-btns">
+        <button class="bar-btn" id="btn-prev-bar" onclick="goPrevEp()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Prev
+        </button>
+        <button class="bar-btn" id="btn-go" onclick="loadPlayer()">&#9654; Play</button>
+        <button class="bar-btn" id="btn-next-bar" onclick="goNextEp()">
+            Next
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div id="extract-spinner">
+            <div class="spin"></div>
+            <span>Extracting...</span>
+        </div>
+    </div>
+</div>
+
+<div id="results">
+    <div id="results-label">Enter MAL ID + Episode then press Play</div>
+    <div id="error-msg"></div>
+</div>
+
+<script>
+    const BASE_DATASET_URL = "https://raw.githubusercontent.com/srtfile/hi_anime_streams_scraper/refs/heads/main/";
+    const DATASET_FILENAMES = ["hianime_streams_list.json"].concat(
+        Array.from({ length: 36 }, (_, i) => `hianime_streams_list_${i + 2}.json`)
+    );
+
+    let datasetCache = null;
+    let currentLang = 'dub';
+    let _fetchToken = 0;
+    const streamCache = new Map();
+
+    function getProxyUrl(url) {
+        if (!url) return '';
+        if (url.startsWith('https://anivexa.onrender.com/proxy')) return url;
+        const cleanUrl = url.split('?')[0].toLowerCase();
+        if (cleanUrl.endsWith('.txt') || cleanUrl.endsWith('.m3u8')) {
+            return `https://anivexa.onrender.com/proxy?url=${encodeURIComponent(url)}&referer=https://otakuhg.site/`;
+        }
+        return url;
+    }
+
+    async function loadAllDatasets() {
+        if (datasetCache) return datasetCache;
+        const promises = DATASET_FILENAMES.map(fname =>
+            fetch(BASE_DATASET_URL + fname).then(r => r.ok ? r.json() : []).catch(() => [])
         );
+        const results = await Promise.all(promises);
+        datasetCache = results.flat();
+        return datasetCache;
+    }
 
-        let datasetCache = null;
-        let hlsInstance = null;
-        let currentLang = 'dub';
-        let autoNextTimer = null;
-        let activeServerStream = null;
-        let allExtractedStreams = [];
-        let cachedMalId = null;
-        let cachedEp = null;
-        let _fetchToken = 0;
-        const COUNTDOWN_S = 10;
+    async function searchOtakuHG(malId, epNum) {
+        const datasets = await loadAllDatasets();
+        const targetMid = String(malId).trim();
+        const targetEp = String(epNum).trim();
+        return datasets.find(item => {
+            const mid = String(item["mal_id/anilist_id/tmdb_id"] || item.mal_id || '').trim();
+            const ep = String(item["episode_no"] || item.ep || '').trim();
+            return mid === targetMid && ep === targetEp;
+        });
+    }
 
-        const streamCache = new Map();
-
-
-        function getProxyUrl(url) {
-            if (!url) return '';
-            if (url.startsWith('https://anivexa.onrender.com/proxy')) return url;
-            const cleanUrl = url.split('?')[0].toLowerCase();
-            // Proxy all HLS stream URLs (.txt master playlists and .m3u8 variant streams)
-            if (cleanUrl.endsWith('.txt') || cleanUrl.endsWith('.m3u8')) {
-                return `https://anivexa.onrender.com/proxy?url=${encodeURIComponent(url)}&referer=https://otakuhg.site/`;
-            }
-            return url;
-        }
-
-        async function loadAllDatasets() {
-            if (datasetCache) return datasetCache;
+    async function fetchHtmlWithProxy(url) {
+        const proxyUrls = [
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+        ];
+        for (const pUrl of proxyUrls) {
             try {
-                const promises = DATASET_FILENAMES.map(fname =>
-                    fetch(BASE_DATASET_URL + fname)
-                        .then(r => r.ok ? r.json() : [])
-                        .catch(() => [])
-                );
-                const results = await Promise.all(promises);
-                datasetCache = results.flat();
-                return datasetCache;
-            } catch (err) {
-                throw new Error("Failed to load OtakuHG datasets: " + err.message);
+                const res = await fetch(pUrl);
+                if (res.ok) {
+                    const text = await res.text();
+                    if (text && text.length > 50) return text;
+                }
+            } catch (e) {}
+        }
+        throw new Error("Could not fetch page content via proxies");
+    }
+
+    function unpackPackedJS(html) {
+        const match = html.match(/eval\(function\(p,a,c,k,e,d\).*?'(.*?)',(\d+),(\d+),'(.*?)'\.split\('\|'\)\)\)/s);
+        if (!match) return "";
+        let payload = match[1];
+        const base = parseInt(match[2], 10);
+        const count = parseInt(match[3], 10);
+        const words = match[4].split("|");
+        function unbase(n, b) {
+            const chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+            let res = "";
+            while (n > 0) { res = chars[n % b] + res; n = Math.floor(n / b); }
+            return res || "0";
+        }
+        for (let i = count - 1; i >= 0; i--) {
+            if (words[i]) {
+                const token = unbase(i, base);
+                payload = payload.replace(new RegExp('\\b' + token + '\\b', 'g'), words[i]);
             }
         }
+        return payload;
+    }
 
-        async function searchOtakuHG(malId, epNum) {
-            const datasets = await loadAllDatasets();
-            const targetMid = String(malId).trim();
-            const targetEp = String(epNum).trim();
-
-            return datasets.find(item => {
-                const mid = String(item["mal_id/anilist_id/tmdb_id"] || item.mal_id || '').trim();
-                const ep = String(item["episode_no"] || item.ep || '').trim();
-                return mid === targetMid && ep === targetEp;
-            });
-        }
-
-        async function fetchHtmlWithProxy(url) {
-            const proxyUrls = [];
-            if (window.location.origin && window.location.protocol.startsWith('http') && !window.location.origin.includes('github.io')) {
-                proxyUrls.push(window.location.origin + `/proxy?url=${encodeURIComponent(url)}`);
+    async function parseMasterPlaylist(masterUrl) {
+        try {
+            const proxied = getProxyUrl(masterUrl);
+            const res = await fetch(proxied);
+            if (!res.ok) return [];
+            const content = await res.text();
+            const base = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1);
+            const variants = [];
+            const lines = content.split(/\r?\n/);
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith("#EXT-X-STREAM-INF:")) {
+                    const resMatch = line.match(/RESOLUTION=(\d+x\d+)/i);
+                    const resolution = resMatch ? resMatch[1] : "HD";
+                    let qLabel = "HD";
+                    if (resolution.includes("1920") || resolution.includes("1080")) qLabel = "1080p";
+                    else if (resolution.includes("1280") || resolution.includes("720")) qLabel = "720p";
+                    else if (resolution.includes("854") || resolution.includes("480")) qLabel = "480p";
+                    else if (resolution.includes("640") || resolution.includes("360")) qLabel = "360p";
+                    if (i + 1 < lines.length) {
+                        const streamPath = lines[i + 1].trim();
+                        if (streamPath && !streamPath.startsWith("#")) {
+                            const absStream = streamPath.startsWith("http") ? streamPath : base + streamPath;
+                            variants.push({ quality: qLabel, url: absStream });
+                        }
+                    }
+                }
             }
-            proxyUrls.push(
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-            );
+            return variants;
+        } catch (e) { return []; }
+    }
 
-            for (const pUrl of proxyUrls) {
+    async function extractOtakuHGStreams(embedUrl) {
+        try {
+            const html = await fetchHtmlWithProxy(embedUrl);
+            const decodedJs = unpackPackedJS(html);
+            let masterUrl = null;
+
+            const linksMatch = decodedJs.match(/var\s+links\s*=\s*(\{.*?\});/);
+            if (linksMatch) {
                 try {
-                    const res = await fetch(pUrl);
-                    if (res.ok) {
-                        const text = await res.text();
-                        if (text && text.length > 50) return text;
-                    }
-                } catch (e) { }
+                    const rawLinks = JSON.parse(linksMatch[1]);
+                    const domain = embedUrl.substring(0, embedUrl.indexOf("/", 8));
+                    masterUrl = rawLinks.hls4 || rawLinks.hls3 || rawLinks.hls2;
+                    if (masterUrl && masterUrl.startsWith("/")) masterUrl = domain + masterUrl;
+                } catch (e) {}
             }
-            throw new Error("Could not fetch page content via proxies");
+
+            if (!masterUrl) {
+                const m3u8Match = (decodedJs + html).match(/https?:\/\/[^\s"'<>]+?(?:master\.txt|\.m3u8)[^\s"'<>]*/i);
+                if (m3u8Match) masterUrl = m3u8Match[0];
+            }
+
+            const variants = masterUrl ? await parseMasterPlaylist(masterUrl) : [];
+            return { masterUrl, variants };
+        } catch (e) {
+            return { masterUrl: null, variants: [], error: e.message };
         }
+    }
 
-        function unpackPackedJS(html) {
-            const match = html.match(/eval\(function\(p,a,c,k,e,d\).*?'(.*?)',(\d+),(\d+),'(.*?)'\.split\('\|'\)\)\)/s);
-            if (!match) return "";
-            let payload = match[1];
-            const base = parseInt(match[2], 10);
-            const count = parseInt(match[3], 10);
-            const words = match[4].split("|");
+    async function getOtakuHGStreams(malId, epNum) {
+        const cacheKey = `${malId}_${epNum}`;
+        if (streamCache.has(cacheKey)) return await streamCache.get(cacheKey);
 
-            function unbase(n, b) {
-                const chars = "0123456789abcdefghijklmnopqrstuvwxyz";
-                let res = "";
-                while (n > 0) {
-                    res = chars[n % b] + res;
-                    n = Math.floor(n / b);
-                }
-                return res || "0";
-            }
+        const fetchPromise = (async () => {
+            const matchedEntry = await searchOtakuHG(malId, epNum);
+            if (!matchedEntry) throw new Error(`MAL ID ${malId} Episode ${epNum} not found in datasets`);
 
-            for (let i = count - 1; i >= 0; i--) {
-                if (words[i]) {
-                    const token = unbase(i, base);
-                    const reg = new RegExp('\\b' + token + '\\b', 'g');
-                    payload = payload.replace(reg, words[i]);
-                }
-            }
-            return payload;
-        }
+            const title = matchedEntry.anime_name || matchedEntry.title || `Anime ${malId}`;
+            const streams = [];
+            const embedEntries = [];
 
-        async function parseMasterPlaylist(masterUrl, pageUrl) {
-            try {
-                const proxiedMaster = getProxyUrl(masterUrl);
-                const res = await fetch(proxiedMaster);
-                if (!res.ok) return [];
-                const content = await res.text();
-
-                const base = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1);
-                const variants = [];
-                const lines = content.split(/\r?\n/);
-
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (line.startsWith("#EXT-X-STREAM-INF:")) {
-                        const resMatch = line.match(/RESOLUTION=(\d+x\d+)/i);
-                        const bwMatch = line.match(/BANDWIDTH=(\d+)/i);
-                        const resolution = resMatch ? resMatch[1] : "HD";
-                        const bandwidth = bwMatch ? bwMatch[1] : "0";
-
-                        let qLabel = "HD";
-                        if (resolution.includes("1920") || resolution.includes("1080")) qLabel = "1080p";
-                        else if (resolution.includes("1280") || resolution.includes("720")) qLabel = "720p";
-                        else if (resolution.includes("854") || resolution.includes("480")) qLabel = "480p";
-                        else if (resolution.includes("640") || resolution.includes("360")) qLabel = "360p";
-
-                        if (i + 1 < lines.length) {
-                            const streamPath = lines[i + 1].trim();
-                            if (streamPath && !streamPath.startsWith("#")) {
-                                const absStream = streamPath.startsWith("http") ? streamPath : base + streamPath;
-                                variants.push({
-                                    quality: qLabel,
-                                    resolution: resolution,
-                                    bandwidth: bandwidth,
-                                    url: absStream
-                                });
-                            }
-                        }
+            Object.keys(matchedEntry).forEach(k => {
+                const v = matchedEntry[k];
+                if (typeof v === 'string') {
+                    const kLower = k.toLowerCase();
+                    const vLower = v.toLowerCase();
+                    if (vLower.includes("otakuhg.site") || kLower.includes("streamhg") || kLower.includes("otakuhg")) {
+                        embedEntries.push({ key: k, url: v, lang: kLower.includes("dub") ? "dub" : "sub" });
                     }
                 }
-                return variants;
-            } catch (e) {
-                return [];
-            }
-        }
+            });
 
-        async function extractOtakuHGStreams(embedUrl) {
-            try {
-                const html = await fetchHtmlWithProxy(embedUrl);
-                const decodedJs = unpackPackedJS(html);
-
-                let masterUrl = null;
-
-                const linksMatch = decodedJs.match(/var\s+links\s*=\s*(\{.*?\});/);
-                if (linksMatch) {
-                    try {
-                        const rawLinks = JSON.parse(linksMatch[1]);
-                        const domain = embedUrl.substring(0, embedUrl.indexOf("/", 8));
-                        masterUrl = rawLinks.hls4 || rawLinks.hls3 || rawLinks.hls2;
-                        if (masterUrl && masterUrl.startsWith("/")) {
-                            masterUrl = domain + masterUrl;
-                        }
-                    } catch (e) { }
-                }
-
-                if (!masterUrl) {
-                    const m3u8Match = (decodedJs + html).match(/https?:\/\/[^\s"'<>]+?(?:master\.txt|\.m3u8)[^\s"'<>]*/i);
-                    if (m3u8Match) {
-                        masterUrl = m3u8Match[0];
-                    }
-                }
-
-                const variants = masterUrl ? await parseMasterPlaylist(masterUrl, embedUrl) : [];
-                return { masterUrl, variants, rawHtml: html };
-            } catch (e) {
-                return { masterUrl: null, variants: [], error: e.message };
-            }
-        }
-
-        async function getOtakuHGStreams(malId, epNum) {
-            const cacheKey = `${malId}_${epNum}`;
-            if (streamCache.has(cacheKey)) {
-                return await streamCache.get(cacheKey);
-            }
-
-            const fetchPromise = (async () => {
-                const matchedEntry = await searchOtakuHG(malId, epNum);
-                if (!matchedEntry) throw new Error(`MAL ID ${malId} Episode ${epNum} not found in OtakuHG datasets`);
-
-                const title = matchedEntry.anime_name || matchedEntry.title || `Anime ${malId}`;
-                const streams = [];
-
-                const embedEntries = [];
+            if (embedEntries.length === 0) {
                 Object.keys(matchedEntry).forEach(k => {
                     const v = matchedEntry[k];
-                    if (typeof v === 'string') {
-                        const kLower = String(k).toLowerCase();
-                        const vLower = v.toLowerCase();
-                        if (vLower.includes("otakuhg.site") || kLower.includes("streamhg") || kLower.includes("otakuhg")) {
-                            const isDub = kLower.includes("dub");
-                            embedEntries.push({ key: k, url: v, lang: isDub ? "dub" : "sub" });
-                        }
+                    if (typeof v === 'string' && v.startsWith("http")) {
+                        embedEntries.push({ key: k, url: v, lang: k.toLowerCase().includes("dub") ? "dub" : "sub" });
                     }
                 });
+            }
 
-                if (embedEntries.length === 0) {
-                    Object.keys(matchedEntry).forEach(k => {
-                        const v = matchedEntry[k];
-                        if (typeof v === 'string' && v.startsWith("http")) {
-                            const isDub = String(k).toLowerCase().includes("dub");
-                            embedEntries.push({ key: k, url: v, lang: isDub ? "dub" : "sub" });
-                        }
-                    });
-                }
-
-                for (const emb of embedEntries) {
-                    try {
-                        const extracted = await extractOtakuHGStreams(emb.url);
-                        if (extracted.variants && extracted.variants.length > 0) {
-                            extracted.variants.forEach(varItem => {
-                                streams.push({
-                                    server: `OtakuHG ${emb.lang.toUpperCase()} (${varItem.quality})`,
-                                    url: varItem.url,
-                                    type: "mp4",
-                                    quality: varItem.quality,
-                                    lang: emb.lang,
-                                    embed_url: emb.url
-                                });
-                            });
-                        } else if (extracted.masterUrl) {
+            for (const emb of embedEntries) {
+                try {
+                    const extracted = await extractOtakuHGStreams(emb.url);
+                    if (extracted.variants && extracted.variants.length > 0) {
+                        extracted.variants.forEach(varItem => {
                             streams.push({
-                                server: `OtakuHG ${emb.lang.toUpperCase()} (HD)`,
-                                url: extracted.masterUrl,
-                                type: "mp4",
-                                quality: "HD",
-                                lang: emb.lang,
-                                embed_url: emb.url
-                            });
-                        } else {
-                            streams.push({
-                                server: `OtakuHG ${emb.lang.toUpperCase()} (Embed)`,
-                                url: emb.url,
-                                type: "iframe",
-                                quality: "Embed",
+                                server: `OtakuHG ${emb.lang.toUpperCase()} (${varItem.quality})`,
+                                url: varItem.url,
+                                proxyUrl: getProxyUrl(varItem.url),
+                                type: "hls",
+                                quality: varItem.quality,
                                 lang: emb.lang
                             });
-                        }
-                    } catch (e) {
+                        });
+                    } else if (extracted.masterUrl) {
+                        streams.push({
+                            server: `OtakuHG ${emb.lang.toUpperCase()} (HD)`,
+                            url: extracted.masterUrl,
+                            proxyUrl: getProxyUrl(extracted.masterUrl),
+                            type: "hls",
+                            quality: "HD",
+                            lang: emb.lang
+                        });
+                    } else {
                         streams.push({
                             server: `OtakuHG ${emb.lang.toUpperCase()} (Embed)`,
                             url: emb.url,
+                            proxyUrl: emb.url,
                             type: "iframe",
                             quality: "Embed",
                             lang: emb.lang
                         });
                     }
-                }
-
-                return {
-                    status: "success",
-                    server: "OtakuHG",
-                    malId: parseInt(malId),
-                    episode: parseInt(epNum),
-                    animeTitle: title,
-                    results: {
-                        stream_url: streams.length > 0 ? streams[0].url : null,
-                        streams: streams
-                    }
-                };
-            })();
-
-            streamCache.set(cacheKey, fetchPromise);
-            return await fetchPromise;
-        }
-
-
-
-        /* ── Embed Player ── */
-        function toggleEmbedPanel() {
-            const panel = document.getElementById('embed-player-panel');
-            const btn = document.getElementById('embed-toggle-btn');
-            const isVisible = panel.classList.toggle('visible');
-            btn.classList.toggle('active', isVisible);
-        }
-
-        function openEmbedPanel() {
-            const panel = document.getElementById('embed-player-panel');
-            const btn = document.getElementById('embed-toggle-btn');
-            panel.classList.add('visible');
-            btn.classList.add('active');
-        }
-
-        function playEmbedUrl() {
-            const rawUrl = document.getElementById('inp-embed-url').value.trim();
-            if (!rawUrl) return;
-
-            const placeholder = document.getElementById('placeholder');
-            const video = document.getElementById('videoPlayer');
-            const iframe = document.getElementById('player-iframe');
-
-            placeholder.style.display = 'none';
-
-            // Hide native video — everything plays in iframe
-            video.style.display = 'none';
-            video.pause();
-            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-
-            // Apply proxy for HLS/stream URLs; leave embed iframe URLs as-is
-            const lc = rawUrl.toLowerCase().split('?')[0];
-            const needsProxy = lc.endsWith('.m3u8') || lc.endsWith('.txt') || lc.endsWith('.mp4');
-            const finalUrl = needsProxy ? getProxyUrl(rawUrl) : rawUrl;
-
-            iframe.src = finalUrl;
-            iframe.style.display = 'block';
-        }
-
-        /* Auto-populate the embed player input with the extracted proxy stream URL */
-        function setEmbedUrl(url) {
-            const input = document.getElementById('inp-embed-url');
-            if (input && url) {
-                input.value = url;
-                openEmbedPanel();
-            }
-        }
-
-        function toggleBar() {
-            const inner = document.getElementById('topbar-inner');
-            const btn = document.getElementById('toggle-bar-btn');
-            btn.classList.toggle('open', inner.classList.toggle('open'));
-        }
-
-        function toggleServerPanel() {
-            const panel = document.getElementById('server-panel');
-            const btn = document.getElementById('srv-toggle-btn');
-            btn.classList.toggle('open', panel.classList.toggle('visible'));
-        }
-
-        function setLang(lang) {
-            currentLang = lang;
-            document.getElementById('btn-dub').classList.toggle('active', lang === 'dub');
-            document.getElementById('btn-sub').classList.toggle('active', lang === 'sub');
-
-            const malId = String(document.getElementById('inp-mal').value).trim();
-            const ep = String(document.getElementById('inp-ep').value).trim();
-
-            if (allExtractedStreams && allExtractedStreams.length > 0 && cachedMalId === malId && cachedEp === ep) {
-                const best = getBestHdStream(allExtractedStreams, lang);
-                if (best) {
-                    playStream(best);
-                    renderServerPanel(allExtractedStreams);
-                } else {
-                    showPlayer(malId, ep, lang);
-                }
-            } else if (malId && ep) {
-                showPlayer(malId, ep, lang);
-            }
-        }
-
-        function playStream(stream) {
-            activeServerStream = stream;
-            const placeholder = document.getElementById('placeholder');
-            const video = document.getElementById('videoPlayer');
-            const iframe = document.getElementById('player-iframe');
-
-            placeholder.style.display = 'none';
-
-            if (!stream) return;
-
-            // Always hide native video — we play everything through the iframe
-            video.style.display = 'none';
-            video.pause();
-            if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-
-            // Build the final URL to load in the iframe
-            let finalUrl;
-            if (stream.type === 'iframe') {
-                // Already an embed URL — use as-is
-                finalUrl = stream.url;
-            } else {
-                // HLS/MP4 stream — wrap through proxy
-                finalUrl = getProxyUrl(stream.url);
-            }
-
-            // Auto-populate embed player input and open it
-            const embedInput = document.getElementById('inp-embed-url');
-            if (embedInput) embedInput.value = finalUrl;
-            openEmbedPanel();
-
-            // Load into the main iframe and show it
-            iframe.src = finalUrl;
-            iframe.style.display = 'block';
-
-            // Note: onended for auto-next is wired to the iframe via message if needed
-            // For now attach it to the video element as a fallback listener
-            video.onended = () => {
-                const malId = document.getElementById('inp-mal').value.trim();
-                const ep = document.getElementById('inp-ep').value.trim();
-                if (malId && ep) triggerAutoNext(malId, ep, currentLang);
-            };
-        }
-
-        function renderServerPanel(streams) {
-            const qRow = document.getElementById('quality-row');
-            const srvList = document.getElementById('server-list');
-            const spLoad = document.getElementById('sp-loading');
-            const spErr = document.getElementById('sp-error');
-            const srvBtn = document.getElementById('srv-toggle-btn');
-
-            spLoad.style.display = 'none';
-            spErr.style.display = 'none';
-            qRow.innerHTML = '';
-            srvList.innerHTML = '';
-
-            if (!streams || !streams.length) {
-                spErr.style.display = 'block';
-                spErr.textContent = 'No streams found for this episode.';
-                if (srvBtn) {
-                    srvBtn.innerHTML = `
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="3" width="20" height="4" rx="1" />
-                            <rect x="2" y="10" width="20" height="4" rx="1" />
-                            <rect x="2" y="17" width="20" height="4" rx="1" />
-                        </svg>
-                        Servers
-                    `;
-                }
-                return;
-            }
-
-            const qualSet = new Set(["1080p", "720p", "480p", "360p"]);
-            streams.forEach(s => { if (s.quality && s.quality !== 'Embed') qualSet.add(s.quality); });
-
-            Array.from(qualSet).forEach(q => {
-                let matchingStream = streams.find(s => s.lang === currentLang && ((s.quality || '').includes(q) || (s.server || '').includes(q)));
-                if (!matchingStream) {
-                    matchingStream = streams.find(s => (s.quality || '').includes(q) || (s.server || '').includes(q));
-                }
-
-                const pill = document.createElement('button');
-                const isActive = (matchingStream && activeServerStream === matchingStream);
-                pill.className = 'q-pill' + (isActive ? ' active' : '') + (matchingStream ? '' : ' unavail');
-                pill.textContent = q;
-                if (matchingStream) {
-                    pill.onclick = () => {
-                        document.querySelectorAll('.q-pill').forEach(p => p.classList.remove('active'));
-                        pill.classList.add('active');
-                        playStream(matchingStream);
-                        if (matchingStream.lang) {
-                            currentLang = matchingStream.lang;
-                            document.getElementById('btn-dub').classList.toggle('active', currentLang === 'dub');
-                            document.getElementById('btn-sub').classList.toggle('active', currentLang === 'sub');
-                        }
-                        renderServerPanel(allExtractedStreams);
-                    };
-                }
-                qRow.appendChild(pill);
-            });
-
-            const sortedStreams = [...streams].sort((a, b) => {
-                if (a.lang === currentLang && b.lang !== currentLang) return -1;
-                if (a.lang !== currentLang && b.lang === currentLang) return 1;
-                return 0;
-            });
-
-            sortedStreams.forEach((st, idx) => {
-                const btn = document.createElement('button');
-                const isCurrentActive = (activeServerStream === st || (!activeServerStream && idx === 0));
-                btn.className = 'srv-btn' + (isCurrentActive ? ' active' : '');
-
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = st.server || `OtakuHG Server ${idx + 1}`;
-                btn.appendChild(nameSpan);
-
-                const badgeText = (st.quality || '') + (st.lang ? ` ${st.lang.toUpperCase()}` : '');
-                if (badgeText.trim()) {
-                    const badge = document.createElement('span');
-                    badge.className = 'srv-badge';
-                    badge.textContent = badgeText.trim();
-                    btn.appendChild(badge);
-                }
-
-                btn.onclick = () => {
-                    document.querySelectorAll('.srv-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    playStream(st);
-                    if (st.lang) {
-                        currentLang = st.lang;
-                        document.getElementById('btn-dub').classList.toggle('active', currentLang === 'dub');
-                        document.getElementById('btn-sub').classList.toggle('active', currentLang === 'sub');
-                    }
-                    renderServerPanel(allExtractedStreams);
-                };
-
-                srvList.appendChild(btn);
-            });
-
-            if (srvBtn) {
-                const activeRes = activeServerStream ? `${activeServerStream.quality} ${activeServerStream.lang ? activeServerStream.lang.toUpperCase() : ''}` : '';
-                srvBtn.innerHTML = `
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="3" width="20" height="4" rx="1" />
-                        <rect x="2" y="10" width="20" height="4" rx="1" />
-                        <rect x="2" y="17" width="20" height="4" rx="1" />
-                    </svg>
-                    Servers (${activeRes.trim() ? activeRes.trim() : streams.length + ' Streams'})
-                `;
-            }
-        }
-
-        function getBestHdStream(streams, preferredLang = 'dub') {
-            if (!streams || streams.length === 0) return null;
-            const priority = ["1080p", "720p", "480p", "360p"];
-
-            const prefStreams = streams.filter(s => s.lang === preferredLang);
-            if (prefStreams.length > 0) {
-                for (const res of priority) {
-                    const found = prefStreams.find(s => (s.quality || s.server || '').includes(res));
-                    if (found) return found;
-                }
-                return prefStreams[0];
-            }
-
-            const altLang = preferredLang === 'dub' ? 'sub' : 'dub';
-            const altStreams = streams.filter(s => s.lang === altLang);
-            if (altStreams.length > 0) {
-                for (const res of priority) {
-                    const found = altStreams.find(s => (s.quality || s.server || '').includes(res));
-                    if (found) return found;
-                }
-                return altStreams[0];
-            }
-
-            for (const res of priority) {
-                const found = streams.find(s => (s.quality || s.server || '').includes(res));
-                if (found) return found;
-            }
-            return streams[0];
-        }
-
-        async function showPlayer(malId, ep, lang = 'dub') {
-            cancelAutoNext();
-            currentLang = lang;
-            const myToken = ++_fetchToken;
-
-            document.getElementById('inp-mal').value = malId;
-            document.getElementById('inp-ep').value = ep;
-            document.getElementById('btn-dub').classList.toggle('active', lang === 'dub');
-            document.getElementById('btn-sub').classList.toggle('active', lang === 'sub');
-
-            document.title = `OtakuHG · MAL ${malId} · Ep ${ep} · ${lang.toUpperCase()}`;
-
-            const spinner = document.getElementById('extract-spinner');
-            if (spinner) spinner.style.display = 'flex';
-
-            document.getElementById('srv-toggle-btn').classList.add('show');
-            document.getElementById('quality-row').innerHTML = '';
-            document.getElementById('server-list').innerHTML = '';
-            document.getElementById('sp-error').style.display = 'none';
-            document.getElementById('sp-loading').style.display = 'flex';
-
-            try {
-                const data = await getOtakuHGStreams(malId, ep);
-                if (myToken !== _fetchToken) return;
-
-                document.getElementById('sp-loading').style.display = 'none';
-
-                const streams = data.results.streams || [];
-                allExtractedStreams = streams;
-                cachedMalId = String(malId);
-                cachedEp = String(ep);
-
-                if (streams.length > 0) {
-                    const best = getBestHdStream(streams, lang);
-                    playStream(best);
-                    renderServerPanel(streams);
-
-
-                } else {
-                    document.getElementById('sp-error').style.display = 'block';
-                    document.getElementById('sp-error').textContent = `No streams available for MAL ${malId} Ep ${ep}.`;
-                }
-            } catch (err) {
-                if (myToken !== _fetchToken) return;
-                document.getElementById('sp-loading').style.display = 'none';
-                document.getElementById('sp-error').style.display = 'block';
-                document.getElementById('sp-error').textContent = 'Error: ' + err.message;
-            } finally {
-                if (myToken === _fetchToken && spinner) {
-                    spinner.style.display = 'none';
+                } catch (e) {
+                    streams.push({
+                        server: `OtakuHG ${emb.lang.toUpperCase()} (Embed)`,
+                        url: emb.url,
+                        proxyUrl: emb.url,
+                        type: "iframe",
+                        quality: "Embed",
+                        lang: emb.lang
+                    });
                 }
             }
+
+            return { title, streams };
+        })();
+
+        streamCache.set(cacheKey, fetchPromise);
+        return await fetchPromise;
+    }
+
+    function renderResults(title, streams, malId, ep) {
+        const resultsEl = document.getElementById('results');
+        resultsEl.innerHTML = '';
+
+        if (!streams || streams.length === 0) {
+            const empty = document.createElement('div');
+            empty.id = 'results-label';
+            empty.textContent = 'No streams found for this episode.';
+            resultsEl.appendChild(empty);
+            return;
         }
 
-        function loadPlayer() {
-            const malId = document.getElementById('inp-mal').value.trim();
-            const ep = document.getElementById('inp-ep').value.trim();
-            if (!malId || !ep) { alert('Please enter both MAL ID and episode number.'); return; }
-            showPlayer(malId, ep, currentLang);
-        }
+        const label = document.createElement('div');
+        label.id = 'results-label';
+        label.textContent = `${title} · Ep ${ep} · ${streams.length} stream${streams.length !== 1 ? 's' : ''} found`;
+        resultsEl.appendChild(label);
 
-        function goPrevEp() {
-            const malId = document.getElementById('inp-mal').value.trim();
-            const ep = parseInt(document.getElementById('inp-ep').value.trim(), 10);
-            if (!malId || isNaN(ep) || ep <= 1) return;
-            showPlayer(malId, ep - 1, currentLang);
-        }
-
-        function goNextEp() {
-            const malId = document.getElementById('inp-mal').value.trim();
-            const ep = parseInt(document.getElementById('inp-ep').value.trim(), 10);
-            if (!malId || isNaN(ep)) return;
-            showPlayer(malId, ep + 1, currentLang);
-        }
-
-        function triggerAutoNext(malId, ep, lang) {
-            if (!document.getElementById('chk-autonext').checked) return;
-            const nextEp = parseInt(ep, 10) + 1;
-            document.getElementById('an-ep-label').textContent = `Episode ${nextEp}`;
-            const overlay = document.getElementById('autonext-overlay');
-            const bar = document.getElementById('an-bar');
-            overlay.style.display = 'block';
-            bar.style.transition = 'none';
-            bar.style.transform = 'scaleX(1)';
-            bar.getBoundingClientRect();
-            bar.style.transition = `transform ${COUNTDOWN_S}s linear`;
-            bar.style.transform = 'scaleX(0)';
-            let remaining = COUNTDOWN_S;
-            autoNextTimer = setInterval(() => { if (--remaining <= 0) goNextNow(); }, 1000);
-        }
-
-        function goNextNow() {
-            cancelAutoNext();
-            const malId = document.getElementById('inp-mal').value.trim();
-            const ep = parseInt(document.getElementById('inp-ep').value.trim(), 10);
-            if (!malId || isNaN(ep)) return;
-            showPlayer(malId, ep + 1, currentLang);
-        }
-
-        function cancelAutoNext() {
-            clearInterval(autoNextTimer);
-            autoNextTimer = null;
-            const overlay = document.getElementById('autonext-overlay');
-            if (overlay) overlay.style.display = 'none';
-        }
-
-        function parseParamsFromUrl() {
-            const path = window.location.pathname;
-            const search = window.location.search;
-            const hash = window.location.hash;
-
-            const pathMatch = path.match(/\/(\d+)\/(\d+)(?:\/(dub|sub))?\/?$/i);
-            if (pathMatch) {
-                return { malId: pathMatch[1], epNum: pathMatch[2], lang: pathMatch[3] || 'dub' };
-            }
-
-            const queryDirectMatch = search.match(/\?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
-            if (queryDirectMatch) {
-                return { malId: queryDirectMatch[1], epNum: queryDirectMatch[2], lang: queryDirectMatch[3] || 'dub' };
-            }
-
-            const searchParams = new URLSearchParams(search);
-            const qMal = searchParams.get('mal_id') || searchParams.get('malId') || searchParams.get('id');
-            const qEp = searchParams.get('ep') || searchParams.get('ep_num') || searchParams.get('episode');
-            const qLang = searchParams.get('lang') || searchParams.get('type');
-            if (qMal && qEp) {
-                return { malId: qMal, epNum: qEp, lang: qLang || 'dub' };
-            }
-
-            const hashMatch = hash.match(/#\/?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
-            if (hashMatch) {
-                return { malId: hashMatch[1], epNum: hashMatch[2], lang: hashMatch[3] || 'dub' };
-            }
-
-            return null;
-        }
-
-        window.OtakuHGAPI = {
-            getStreams: getOtakuHGStreams,
-            search: searchOtakuHG,
-            loadDatasets: loadAllDatasets,
-            getProxyUrl: getProxyUrl
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const params = parseParamsFromUrl();
-            if (params) {
-                showPlayer(params.malId, params.epNum, params.lang);
-            }
+        // Sort: preferred lang first
+        const sorted = [...streams].sort((a, b) => {
+            if (a.lang === currentLang && b.lang !== currentLang) return -1;
+            if (a.lang !== currentLang && b.lang === currentLang) return 1;
+            return 0;
         });
-    </script>
-</body>
 
+        sorted.forEach(st => {
+            const card = document.createElement('div');
+            card.className = 'stream-card';
+
+            const header = document.createElement('div');
+            header.className = 'stream-card-header';
+
+            const name = document.createElement('span');
+            name.className = 'stream-name';
+            name.textContent = st.server;
+
+            const badges = document.createElement('div');
+            badges.className = 'stream-badges';
+
+            const langBadge = document.createElement('span');
+            langBadge.className = `badge lang-${st.lang}`;
+            langBadge.textContent = st.lang.toUpperCase();
+            badges.appendChild(langBadge);
+
+            if (st.quality && st.quality !== 'Embed') {
+                const qBadge = document.createElement('span');
+                qBadge.className = 'badge quality';
+                qBadge.textContent = st.quality;
+                badges.appendChild(qBadge);
+            }
+
+            header.appendChild(name);
+            header.appendChild(badges);
+
+            const urlRow = document.createElement('div');
+            urlRow.className = 'stream-url-row';
+
+            const urlBox = document.createElement('div');
+            urlBox.className = 'stream-url';
+            urlBox.textContent = st.proxyUrl;
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(st.proxyUrl).then(() => {
+                    copyBtn.textContent = 'Copied!';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('copied');
+                    }, 1800);
+                });
+            };
+
+            urlRow.appendChild(urlBox);
+            urlRow.appendChild(copyBtn);
+
+            card.appendChild(header);
+            card.appendChild(urlRow);
+            resultsEl.appendChild(card);
+        });
+    }
+
+    async function showPlayer(malId, ep, lang) {
+        currentLang = lang;
+        const myToken = ++_fetchToken;
+
+        document.getElementById('inp-mal').value = malId;
+        document.getElementById('inp-ep').value = ep;
+        document.getElementById('btn-dub').classList.toggle('active', lang === 'dub');
+        document.getElementById('btn-sub').classList.toggle('active', lang === 'sub');
+        document.title = `OtakuHG · MAL ${malId} · Ep ${ep}`;
+
+        const spinner = document.getElementById('extract-spinner');
+        const resultsEl = document.getElementById('results');
+        const errorEl = document.getElementById('error-msg');
+
+        spinner.style.display = 'flex';
+        errorEl.style.display = 'none';
+        resultsEl.innerHTML = '<div id="results-label">Extracting streams...</div>';
+
+        try {
+            const data = await getOtakuHGStreams(malId, ep);
+            if (myToken !== _fetchToken) return;
+            renderResults(data.title, data.streams, malId, ep);
+        } catch (err) {
+            if (myToken !== _fetchToken) return;
+            resultsEl.innerHTML = '';
+            errorEl.style.display = 'block';
+            errorEl.textContent = 'Error: ' + err.message;
+        } finally {
+            if (myToken === _fetchToken) spinner.style.display = 'none';
+        }
+    }
+
+    function loadPlayer() {
+        const malId = document.getElementById('inp-mal').value.trim();
+        const ep = document.getElementById('inp-ep').value.trim();
+        if (!malId || !ep) { alert('Please enter both MAL ID and episode number.'); return; }
+        showPlayer(malId, ep, currentLang);
+    }
+
+    function goPrevEp() {
+        const malId = document.getElementById('inp-mal').value.trim();
+        const ep = parseInt(document.getElementById('inp-ep').value.trim(), 10);
+        if (!malId || isNaN(ep) || ep <= 1) return;
+        showPlayer(malId, ep - 1, currentLang);
+    }
+
+    function goNextEp() {
+        const malId = document.getElementById('inp-mal').value.trim();
+        const ep = parseInt(document.getElementById('inp-ep').value.trim(), 10);
+        if (!malId || isNaN(ep)) return;
+        showPlayer(malId, ep + 1, currentLang);
+    }
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.getElementById('btn-dub').classList.toggle('active', lang === 'dub');
+        document.getElementById('btn-sub').classList.toggle('active', lang === 'sub');
+    }
+
+    function parseParamsFromUrl() {
+        const path = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
+
+        const pathMatch = path.match(/\/(\d+)\/(\d+)(?:\/(dub|sub))?\/?$/i);
+        if (pathMatch) return { malId: pathMatch[1], epNum: pathMatch[2], lang: pathMatch[3] || 'dub' };
+
+        const queryDirectMatch = search.match(/\?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
+        if (queryDirectMatch) return { malId: queryDirectMatch[1], epNum: queryDirectMatch[2], lang: queryDirectMatch[3] || 'dub' };
+
+        const searchParams = new URLSearchParams(search);
+        const qMal = searchParams.get('mal_id') || searchParams.get('malId') || searchParams.get('id');
+        const qEp = searchParams.get('ep') || searchParams.get('ep_num') || searchParams.get('episode');
+        const qLang = searchParams.get('lang') || searchParams.get('type');
+        if (qMal && qEp) return { malId: qMal, epNum: qEp, lang: qLang || 'dub' };
+
+        const hashMatch = hash.match(/#\/?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
+        if (hashMatch) return { malId: hashMatch[1], epNum: hashMatch[2], lang: hashMatch[3] || 'dub' };
+
+        return null;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const params = parseParamsFromUrl();
+        if (params) showPlayer(params.malId, params.epNum, params.lang);
+    });
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') loadPlayer();
+    });
+</script>
+</body>
 </html>
