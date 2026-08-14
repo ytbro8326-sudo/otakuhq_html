@@ -6,262 +6,63 @@
     <title>OtakuHG</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html, body {
-            background: #0a0a0f;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: #e2e2e8;
-            min-height: 100%;
-        }
+        html, body { background: #0a0a0f; font-family: 'Segoe UI', system-ui, sans-serif; color: #e2e2e8; }
 
         #topbar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
-            background: #13131a;
-            border-bottom: 1px solid #222230;
-            flex-wrap: wrap;
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px; background: #13131a;
+            border-bottom: 1px solid #222230; flex-wrap: wrap;
         }
-
-        .brand {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: #7c6dfa;
-            white-space: nowrap;
-        }
-
-        .field-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .field-group label {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            white-space: nowrap;
-        }
-
+        .brand { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #7c6dfa; }
+        .field-group { display: flex; align-items: center; gap: 6px; }
+        .field-group label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .06em; }
         .field-group input {
-            width: 80px;
-            padding: 4px 8px;
-            background: #1e1e2e;
-            border: 1px solid #2e2e42;
-            border-radius: 6px;
-            color: #e2e2e8;
-            font-size: 13px;
-            outline: none;
-            transition: border-color .15s;
+            width: 80px; padding: 4px 8px;
+            background: #1e1e2e; border: 1px solid #2e2e42; border-radius: 6px;
+            color: #e2e2e8; font-size: 13px; outline: none;
         }
-
         .field-group input:focus { border-color: #7c6dfa; }
 
-        #lang-toggle {
-            display: flex;
-            background: #1e1e2e;
-            border: 1px solid #2e2e42;
-            border-radius: 8px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        #lang-toggle button {
-            padding: 5px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            background: transparent;
-            color: #888;
-            cursor: pointer;
-            transition: background .15s, color .15s;
-        }
-
+        #lang-toggle { display: flex; background: #1e1e2e; border: 1px solid #2e2e42; border-radius: 8px; overflow: hidden; }
+        #lang-toggle button { padding: 5px 14px; font-size: 12px; font-weight: 600; border: none; background: transparent; color: #888; cursor: pointer; }
         #lang-toggle button.active { background: #7c6dfa; color: #fff; }
 
-        #autonext-wrap {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            flex-shrink: 0;
-        }
-
-        #autonext-wrap span {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            white-space: nowrap;
-        }
-
-        .switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+        #autonext-wrap { display: flex; align-items: center; gap: 7px; }
+        #autonext-wrap span { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .06em; }
+        .switch { position: relative; width: 36px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; inset: 0;
-            background: #2e2e42; border-radius: 20px;
-            cursor: pointer; transition: background .2s;
-        }
-        .slider::before {
-            content: '';
-            position: absolute;
-            width: 14px; height: 14px;
-            left: 3px; top: 3px;
-            background: #fff; border-radius: 50%;
-            transition: transform .2s;
-        }
+        .slider { position: absolute; inset: 0; background: #2e2e42; border-radius: 20px; cursor: pointer; transition: background .2s; }
+        .slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; }
         .switch input:checked + .slider { background: #7c6dfa; }
         .switch input:checked + .slider::before { transform: translateX(16px); }
 
-        .ctrl-btns { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-
-        .bar-btn {
-            display: flex; align-items: center; gap: 5px;
-            padding: 5px 14px;
-            border: none; border-radius: 8px;
-            font-size: 13px; font-weight: 600;
-            cursor: pointer; white-space: nowrap;
-            transition: background .15s, transform .1s;
-        }
-        .bar-btn:active { transform: scale(.96); }
-
-        #btn-prev-bar, #btn-next-bar {
-            background: #1e1e2e; color: #aaa;
-            border: 1px solid #2e2e42;
-        }
-        #btn-prev-bar:hover, #btn-next-bar:hover {
-            background: rgba(124,109,250,.18);
-            border-color: #7c6dfa; color: #fff;
-        }
+        .ctrl-btns { display: flex; gap: 6px; align-items: center; }
+        .bar-btn { display: flex; align-items: center; gap: 5px; padding: 5px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        #btn-prev-bar, #btn-next-bar { background: #1e1e2e; color: #aaa; border: 1px solid #2e2e42; }
         #btn-go { background: #7c6dfa; color: #fff; }
-        #btn-go:hover { background: #6a5be0; }
 
-        #extract-spinner {
-            display: none;
-            align-items: center; gap: 6px;
-            color: #a78bfa; font-size: 12px; font-weight: 600;
-            background: rgba(167,139,250,.12);
-            padding: 5px 12px; border-radius: 8px;
-            border: 1px solid rgba(167,139,250,.25);
-        }
-        .spin {
-            width: 14px; height: 14px;
-            border: 2px solid #2e2e42; border-top-color: #7c6dfa;
-            border-radius: 50%;
-            animation: spin .7s linear infinite; flex-shrink: 0;
-        }
+        .spin { width: 14px; height: 14px; border: 2px solid #2e2e42; border-top-color: #7c6dfa; border-radius: 50%; animation: spin .7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        #extract-spinner { display: none; align-items: center; gap: 6px; color: #a78bfa; font-size: 12px; font-weight: 600; background: rgba(167,139,250,.12); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(167,139,250,.25); }
 
-        /* ── Results area ── */
-        #results {
+        /* Output */
+        #output {
             padding: 16px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #results-label {
-            font-size: 11px;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-        }
-
-        #error-msg {
-            color: #f87171;
-            font-size: 13px;
-            display: none;
-        }
-
-        .stream-card {
-            background: #13131a;
-            border: 1px solid #222230;
-            border-radius: 10px;
-            padding: 12px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .stream-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .stream-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: #c4b8ff;
-        }
-
-        .stream-badges {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: #1e1e2e;
-            border: 1px solid #2e2e42;
-            color: #777;
-        }
-
-        .badge.lang-dub { border-color: #7c6dfa; color: #a78bfa; }
-        .badge.lang-sub { border-color: #22d3ee; color: #67e8f9; }
-        .badge.quality { border-color: #4ade80; color: #86efac; }
-
-        .stream-url-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .stream-url {
-            flex: 1;
-            font-size: 11px;
             font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.9;
             color: #7c6dfa;
-            background: #0d0d16;
-            border: 1px solid #1e1e2e;
-            border-radius: 6px;
-            padding: 6px 10px;
             word-break: break-all;
             white-space: pre-wrap;
-            user-select: all;
         }
-
-        .copy-btn {
-            padding: 5px 12px;
-            font-size: 11px;
-            font-weight: 700;
-            background: #1e1e2e;
-            border: 1px solid #2e2e42;
-            border-radius: 6px;
-            color: #888;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all .15s;
-            flex-shrink: 0;
-        }
-        .copy-btn:hover { border-color: #7c6dfa; color: #fff; background: rgba(124,109,250,.18); }
-        .copy-btn.copied { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,.1); }
+        #output .label { color: #555; font-size: 11px; }
+        #output .error { color: #f87171; }
     </style>
 </head>
 <body>
 
 <div id="topbar">
     <span class="brand">&#9654; OtakuHG</span>
-
     <div class="field-group">
         <label>MAL ID</label>
         <input id="inp-mal" type="number" placeholder="e.g. 21" min="1">
@@ -270,41 +71,23 @@
         <label>Episode</label>
         <input id="inp-ep" type="number" placeholder="e.g. 1" min="1">
     </div>
-
     <div id="lang-toggle">
         <button id="btn-dub" class="active" onclick="setLang('dub')">DUB</button>
         <button id="btn-sub" onclick="setLang('sub')">SUB</button>
     </div>
-
     <div id="autonext-wrap">
         <span>Auto-Next</span>
-        <label class="switch">
-            <input type="checkbox" id="chk-autonext" checked>
-            <span class="slider"></span>
-        </label>
+        <label class="switch"><input type="checkbox" id="chk-autonext" checked><span class="slider"></span></label>
     </div>
-
     <div class="ctrl-btns">
-        <button class="bar-btn" id="btn-prev-bar" onclick="goPrevEp()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            Prev
-        </button>
+        <button class="bar-btn" id="btn-prev-bar" onclick="goPrevEp()">&#8592; Prev</button>
         <button class="bar-btn" id="btn-go" onclick="loadPlayer()">&#9654; Play</button>
-        <button class="bar-btn" id="btn-next-bar" onclick="goNextEp()">
-            Next
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <div id="extract-spinner">
-            <div class="spin"></div>
-            <span>Extracting...</span>
-        </div>
+        <button class="bar-btn" id="btn-next-bar" onclick="goNextEp()">Next &#8594;</button>
+        <div id="extract-spinner"><div class="spin"></div><span>Extracting...</span></div>
     </div>
 </div>
 
-<div id="results">
-    <div id="results-label">Enter MAL ID + Episode then press Play</div>
-    <div id="error-msg"></div>
-</div>
+<div id="output"><span class="label">Enter MAL ID + Episode then press Play</span></div>
 
 <script>
     const BASE_DATASET_URL = "https://raw.githubusercontent.com/srtfile/hi_anime_streams_scraper/refs/heads/main/";
@@ -320,8 +103,8 @@
     function getProxyUrl(url) {
         if (!url) return '';
         if (url.startsWith('https://anivexa.onrender.com/proxy')) return url;
-        const cleanUrl = url.split('?')[0].toLowerCase();
-        if (cleanUrl.endsWith('.txt') || cleanUrl.endsWith('.m3u8')) {
+        const clean = url.split('?')[0].toLowerCase();
+        if (clean.endsWith('.txt') || clean.endsWith('.m3u8')) {
             return `https://anivexa.onrender.com/proxy?url=${encodeURIComponent(url)}&referer=https://otakuhg.site/`;
         }
         return url;
@@ -329,90 +112,75 @@
 
     async function loadAllDatasets() {
         if (datasetCache) return datasetCache;
-        const promises = DATASET_FILENAMES.map(fname =>
-            fetch(BASE_DATASET_URL + fname).then(r => r.ok ? r.json() : []).catch(() => [])
+        const results = await Promise.all(
+            DATASET_FILENAMES.map(f => fetch(BASE_DATASET_URL + f).then(r => r.ok ? r.json() : []).catch(() => []))
         );
-        const results = await Promise.all(promises);
         datasetCache = results.flat();
         return datasetCache;
     }
 
     async function searchOtakuHG(malId, epNum) {
         const datasets = await loadAllDatasets();
-        const targetMid = String(malId).trim();
-        const targetEp = String(epNum).trim();
         return datasets.find(item => {
             const mid = String(item["mal_id/anilist_id/tmdb_id"] || item.mal_id || '').trim();
-            const ep = String(item["episode_no"] || item.ep || '').trim();
-            return mid === targetMid && ep === targetEp;
+            const ep  = String(item["episode_no"] || item.ep || '').trim();
+            return mid === String(malId).trim() && ep === String(epNum).trim();
         });
     }
 
     async function fetchHtmlWithProxy(url) {
-        const proxyUrls = [
+        const proxies = [
             `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
             `https://corsproxy.io/?${encodeURIComponent(url)}`,
             `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
         ];
-        for (const pUrl of proxyUrls) {
+        for (const p of proxies) {
             try {
-                const res = await fetch(pUrl);
-                if (res.ok) {
-                    const text = await res.text();
-                    if (text && text.length > 50) return text;
-                }
+                const res = await fetch(p);
+                if (res.ok) { const t = await res.text(); if (t && t.length > 50) return t; }
             } catch (e) {}
         }
-        throw new Error("Could not fetch page content via proxies");
+        throw new Error("All CORS proxies failed");
     }
 
     function unpackPackedJS(html) {
         const match = html.match(/eval\(function\(p,a,c,k,e,d\).*?'(.*?)',(\d+),(\d+),'(.*?)'\.split\('\|'\)\)\)/s);
         if (!match) return "";
         let payload = match[1];
-        const base = parseInt(match[2], 10);
-        const count = parseInt(match[3], 10);
-        const words = match[4].split("|");
+        const base = parseInt(match[2], 10), count = parseInt(match[3], 10), words = match[4].split("|");
         function unbase(n, b) {
-            const chars = "0123456789abcdefghijklmnopqrstuvwxyz";
-            let res = "";
-            while (n > 0) { res = chars[n % b] + res; n = Math.floor(n / b); }
-            return res || "0";
+            const c = "0123456789abcdefghijklmnopqrstuvwxyz"; let r = "";
+            while (n > 0) { r = c[n % b] + r; n = Math.floor(n / b); }
+            return r || "0";
         }
         for (let i = count - 1; i >= 0; i--) {
-            if (words[i]) {
-                const token = unbase(i, base);
-                payload = payload.replace(new RegExp('\\b' + token + '\\b', 'g'), words[i]);
-            }
+            if (words[i]) payload = payload.replace(new RegExp('\\b' + unbase(i, base) + '\\b', 'g'), words[i]);
         }
         return payload;
     }
 
     async function parseMasterPlaylist(masterUrl) {
         try {
-            const proxied = getProxyUrl(masterUrl);
-            const res = await fetch(proxied);
+            const res = await fetch(getProxyUrl(masterUrl));
             if (!res.ok) return [];
-            const content = await res.text();
+            const text = await res.text();
             const base = masterUrl.substring(0, masterUrl.lastIndexOf("/") + 1);
             const variants = [];
-            const lines = content.split(/\r?\n/);
+            const lines = text.split(/\r?\n/);
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (line.startsWith("#EXT-X-STREAM-INF:")) {
-                    const resMatch = line.match(/RESOLUTION=(\d+x\d+)/i);
-                    const resolution = resMatch ? resMatch[1] : "HD";
-                    let qLabel = "HD";
-                    if (resolution.includes("1920") || resolution.includes("1080")) qLabel = "1080p";
-                    else if (resolution.includes("1280") || resolution.includes("720")) qLabel = "720p";
-                    else if (resolution.includes("854") || resolution.includes("480")) qLabel = "480p";
-                    else if (resolution.includes("640") || resolution.includes("360")) qLabel = "360p";
-                    if (i + 1 < lines.length) {
-                        const streamPath = lines[i + 1].trim();
-                        if (streamPath && !streamPath.startsWith("#")) {
-                            const absStream = streamPath.startsWith("http") ? streamPath : base + streamPath;
-                            variants.push({ quality: qLabel, url: absStream });
-                        }
+                    const rm = line.match(/RESOLUTION=(\d+x\d+)/i);
+                    const res = rm ? rm[1] : "HD";
+                    let q = "HD";
+                    if (res.includes("1920")||res.includes("1080")) q="1080p";
+                    else if (res.includes("1280")||res.includes("720")) q="720p";
+                    else if (res.includes("854")||res.includes("480")) q="480p";
+                    else if (res.includes("640")||res.includes("360")) q="360p";
+                    const next = lines[i+1] && lines[i+1].trim();
+                    if (next && !next.startsWith("#")) {
+                        const abs = next.startsWith("http") ? next : base + next;
+                        variants.push({ quality: q, url: abs });
                     }
                 }
             }
@@ -420,237 +188,103 @@
         } catch (e) { return []; }
     }
 
-    async function extractOtakuHGStreams(embedUrl) {
+    async function extractStreams(embedUrl) {
         try {
             const html = await fetchHtmlWithProxy(embedUrl);
-            const decodedJs = unpackPackedJS(html);
+            const js = unpackPackedJS(html);
             let masterUrl = null;
-
-            const linksMatch = decodedJs.match(/var\s+links\s*=\s*(\{.*?\});/);
-            if (linksMatch) {
+            const lm = js.match(/var\s+links\s*=\s*(\{.*?\});/);
+            if (lm) {
                 try {
-                    const rawLinks = JSON.parse(linksMatch[1]);
+                    const raw = JSON.parse(lm[1]);
                     const domain = embedUrl.substring(0, embedUrl.indexOf("/", 8));
-                    masterUrl = rawLinks.hls4 || rawLinks.hls3 || rawLinks.hls2;
+                    masterUrl = raw.hls4 || raw.hls3 || raw.hls2;
                     if (masterUrl && masterUrl.startsWith("/")) masterUrl = domain + masterUrl;
                 } catch (e) {}
             }
-
             if (!masterUrl) {
-                const m3u8Match = (decodedJs + html).match(/https?:\/\/[^\s"'<>]+?(?:master\.txt|\.m3u8)[^\s"'<>]*/i);
-                if (m3u8Match) masterUrl = m3u8Match[0];
+                const m = (js + html).match(/https?:\/\/[^\s"'<>]+?(?:master\.txt|\.m3u8)[^\s"'<>]*/i);
+                if (m) masterUrl = m[0];
             }
-
             const variants = masterUrl ? await parseMasterPlaylist(masterUrl) : [];
             return { masterUrl, variants };
-        } catch (e) {
-            return { masterUrl: null, variants: [], error: e.message };
-        }
+        } catch (e) { return { masterUrl: null, variants: [] }; }
     }
 
-    async function getOtakuHGStreams(malId, epNum) {
-        const cacheKey = `${malId}_${epNum}`;
-        if (streamCache.has(cacheKey)) return await streamCache.get(cacheKey);
-
-        const fetchPromise = (async () => {
-            const matchedEntry = await searchOtakuHG(malId, epNum);
-            if (!matchedEntry) throw new Error(`MAL ID ${malId} Episode ${epNum} not found in datasets`);
-
-            const title = matchedEntry.anime_name || matchedEntry.title || `Anime ${malId}`;
-            const streams = [];
+    async function getStreams(malId, epNum) {
+        const key = `${malId}_${epNum}`;
+        if (streamCache.has(key)) return streamCache.get(key);
+        const p = (async () => {
+            const entry = await searchOtakuHG(malId, epNum);
+            if (!entry) throw new Error(`MAL ${malId} Ep ${epNum} not found`);
+            const title = entry.anime_name || entry.title || `Anime ${malId}`;
             const embedEntries = [];
-
-            Object.keys(matchedEntry).forEach(k => {
-                const v = matchedEntry[k];
-                if (typeof v === 'string') {
-                    const kLower = k.toLowerCase();
-                    const vLower = v.toLowerCase();
-                    if (vLower.includes("otakuhg.site") || kLower.includes("streamhg") || kLower.includes("otakuhg")) {
-                        embedEntries.push({ key: k, url: v, lang: kLower.includes("dub") ? "dub" : "sub" });
-                    }
-                }
+            Object.keys(entry).forEach(k => {
+                const v = entry[k];
+                if (typeof v !== 'string') return;
+                const kl = k.toLowerCase(), vl = v.toLowerCase();
+                if (vl.includes("otakuhg.site") || kl.includes("streamhg") || kl.includes("otakuhg"))
+                    embedEntries.push({ url: v, lang: kl.includes("dub") ? "dub" : "sub" });
             });
-
-            if (embedEntries.length === 0) {
-                Object.keys(matchedEntry).forEach(k => {
-                    const v = matchedEntry[k];
-                    if (typeof v === 'string' && v.startsWith("http")) {
-                        embedEntries.push({ key: k, url: v, lang: k.toLowerCase().includes("dub") ? "dub" : "sub" });
-                    }
+            if (!embedEntries.length) {
+                Object.keys(entry).forEach(k => {
+                    const v = entry[k];
+                    if (typeof v === 'string' && v.startsWith("http"))
+                        embedEntries.push({ url: v, lang: k.toLowerCase().includes("dub") ? "dub" : "sub" });
                 });
             }
-
+            const streams = [];
             for (const emb of embedEntries) {
-                try {
-                    const extracted = await extractOtakuHGStreams(emb.url);
-                    if (extracted.variants && extracted.variants.length > 0) {
-                        extracted.variants.forEach(varItem => {
-                            streams.push({
-                                server: `OtakuHG ${emb.lang.toUpperCase()} (${varItem.quality})`,
-                                url: varItem.url,
-                                proxyUrl: getProxyUrl(varItem.url),
-                                type: "hls",
-                                quality: varItem.quality,
-                                lang: emb.lang
-                            });
-                        });
-                    } else if (extracted.masterUrl) {
-                        streams.push({
-                            server: `OtakuHG ${emb.lang.toUpperCase()} (HD)`,
-                            url: extracted.masterUrl,
-                            proxyUrl: getProxyUrl(extracted.masterUrl),
-                            type: "hls",
-                            quality: "HD",
-                            lang: emb.lang
-                        });
-                    } else {
-                        streams.push({
-                            server: `OtakuHG ${emb.lang.toUpperCase()} (Embed)`,
-                            url: emb.url,
-                            proxyUrl: emb.url,
-                            type: "iframe",
-                            quality: "Embed",
-                            lang: emb.lang
-                        });
-                    }
-                } catch (e) {
-                    streams.push({
-                        server: `OtakuHG ${emb.lang.toUpperCase()} (Embed)`,
-                        url: emb.url,
-                        proxyUrl: emb.url,
-                        type: "iframe",
-                        quality: "Embed",
-                        lang: emb.lang
-                    });
+                const ex = await extractStreams(emb.url);
+                if (ex.variants.length) {
+                    ex.variants.forEach(v => streams.push({ label: `[${emb.lang.toUpperCase()}] ${v.quality}`, url: getProxyUrl(v.url) }));
+                } else if (ex.masterUrl) {
+                    streams.push({ label: `[${emb.lang.toUpperCase()}] HD`, url: getProxyUrl(ex.masterUrl) });
+                } else {
+                    streams.push({ label: `[${emb.lang.toUpperCase()}] Embed`, url: emb.url });
                 }
             }
-
             return { title, streams };
         })();
-
-        streamCache.set(cacheKey, fetchPromise);
-        return await fetchPromise;
+        streamCache.set(key, p);
+        return p;
     }
 
-    function renderResults(title, streams, malId, ep) {
-        const resultsEl = document.getElementById('results');
-        resultsEl.innerHTML = '';
-
-        if (!streams || streams.length === 0) {
-            const empty = document.createElement('div');
-            empty.id = 'results-label';
-            empty.textContent = 'No streams found for this episode.';
-            resultsEl.appendChild(empty);
-            return;
-        }
-
-        const label = document.createElement('div');
-        label.id = 'results-label';
-        label.textContent = `${title} · Ep ${ep} · ${streams.length} stream${streams.length !== 1 ? 's' : ''} found`;
-        resultsEl.appendChild(label);
-
-        // Sort: preferred lang first
-        const sorted = [...streams].sort((a, b) => {
-            if (a.lang === currentLang && b.lang !== currentLang) return -1;
-            if (a.lang !== currentLang && b.lang === currentLang) return 1;
-            return 0;
-        });
-
-        sorted.forEach(st => {
-            const card = document.createElement('div');
-            card.className = 'stream-card';
-
-            const header = document.createElement('div');
-            header.className = 'stream-card-header';
-
-            const name = document.createElement('span');
-            name.className = 'stream-name';
-            name.textContent = st.server;
-
-            const badges = document.createElement('div');
-            badges.className = 'stream-badges';
-
-            const langBadge = document.createElement('span');
-            langBadge.className = `badge lang-${st.lang}`;
-            langBadge.textContent = st.lang.toUpperCase();
-            badges.appendChild(langBadge);
-
-            if (st.quality && st.quality !== 'Embed') {
-                const qBadge = document.createElement('span');
-                qBadge.className = 'badge quality';
-                qBadge.textContent = st.quality;
-                badges.appendChild(qBadge);
-            }
-
-            header.appendChild(name);
-            header.appendChild(badges);
-
-            const urlRow = document.createElement('div');
-            urlRow.className = 'stream-url-row';
-
-            const urlBox = document.createElement('div');
-            urlBox.className = 'stream-url';
-            urlBox.textContent = st.proxyUrl;
-
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-btn';
-            copyBtn.textContent = 'Copy';
-            copyBtn.onclick = () => {
-                navigator.clipboard.writeText(st.proxyUrl).then(() => {
-                    copyBtn.textContent = 'Copied!';
-                    copyBtn.classList.add('copied');
-                    setTimeout(() => {
-                        copyBtn.textContent = 'Copy';
-                        copyBtn.classList.remove('copied');
-                    }, 1800);
-                });
-            };
-
-            urlRow.appendChild(urlBox);
-            urlRow.appendChild(copyBtn);
-
-            card.appendChild(header);
-            card.appendChild(urlRow);
-            resultsEl.appendChild(card);
-        });
+    function setOutput(html) {
+        document.getElementById('output').innerHTML = html;
     }
 
     async function showPlayer(malId, ep, lang) {
         currentLang = lang;
-        const myToken = ++_fetchToken;
-
+        const tok = ++_fetchToken;
         document.getElementById('inp-mal').value = malId;
         document.getElementById('inp-ep').value = ep;
         document.getElementById('btn-dub').classList.toggle('active', lang === 'dub');
         document.getElementById('btn-sub').classList.toggle('active', lang === 'sub');
-        document.title = `OtakuHG · MAL ${malId} · Ep ${ep}`;
-
-        const spinner = document.getElementById('extract-spinner');
-        const resultsEl = document.getElementById('results');
-        const errorEl = document.getElementById('error-msg');
-
-        spinner.style.display = 'flex';
-        errorEl.style.display = 'none';
-        resultsEl.innerHTML = '<div id="results-label">Extracting streams...</div>';
-
+        document.getElementById('extract-spinner').style.display = 'flex';
+        setOutput('<span class="label">Extracting...</span>');
         try {
-            const data = await getOtakuHGStreams(malId, ep);
-            if (myToken !== _fetchToken) return;
-            renderResults(data.title, data.streams, malId, ep);
+            const data = await getStreams(malId, ep);
+            if (tok !== _fetchToken) return;
+            if (!data.streams.length) { setOutput('<span class="label">No streams found.</span>'); return; }
+            // Sort preferred lang first
+            const sorted = [...data.streams].sort((a, b) => {
+                const al = a.label.toLowerCase().includes(lang), bl = b.label.toLowerCase().includes(lang);
+                return al === bl ? 0 : al ? -1 : 1;
+            });
+            setOutput(sorted.map(s => `<span class="label">${s.label}</span>\n${s.url}`).join('\n\n'));
         } catch (err) {
-            if (myToken !== _fetchToken) return;
-            resultsEl.innerHTML = '';
-            errorEl.style.display = 'block';
-            errorEl.textContent = 'Error: ' + err.message;
+            if (tok !== _fetchToken) return;
+            setOutput(`<span class="error">Error: ${err.message}</span>`);
         } finally {
-            if (myToken === _fetchToken) spinner.style.display = 'none';
+            if (tok === _fetchToken) document.getElementById('extract-spinner').style.display = 'none';
         }
     }
 
     function loadPlayer() {
         const malId = document.getElementById('inp-mal').value.trim();
         const ep = document.getElementById('inp-ep').value.trim();
-        if (!malId || !ep) { alert('Please enter both MAL ID and episode number.'); return; }
+        if (!malId || !ep) return;
         showPlayer(malId, ep, currentLang);
     }
 
@@ -675,25 +309,17 @@
     }
 
     function parseParamsFromUrl() {
-        const path = window.location.pathname;
-        const search = window.location.search;
-        const hash = window.location.hash;
-
-        const pathMatch = path.match(/\/(\d+)\/(\d+)(?:\/(dub|sub))?\/?$/i);
-        if (pathMatch) return { malId: pathMatch[1], epNum: pathMatch[2], lang: pathMatch[3] || 'dub' };
-
-        const queryDirectMatch = search.match(/\?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
-        if (queryDirectMatch) return { malId: queryDirectMatch[1], epNum: queryDirectMatch[2], lang: queryDirectMatch[3] || 'dub' };
-
-        const searchParams = new URLSearchParams(search);
-        const qMal = searchParams.get('mal_id') || searchParams.get('malId') || searchParams.get('id');
-        const qEp = searchParams.get('ep') || searchParams.get('ep_num') || searchParams.get('episode');
-        const qLang = searchParams.get('lang') || searchParams.get('type');
-        if (qMal && qEp) return { malId: qMal, epNum: qEp, lang: qLang || 'dub' };
-
-        const hashMatch = hash.match(/#\/?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
-        if (hashMatch) return { malId: hashMatch[1], epNum: hashMatch[2], lang: hashMatch[3] || 'dub' };
-
+        const path = window.location.pathname, search = window.location.search, hash = window.location.hash;
+        let m = path.match(/\/(\d+)\/(\d+)(?:\/(dub|sub))?\/?$/i);
+        if (m) return { malId: m[1], epNum: m[2], lang: m[3] || 'dub' };
+        m = search.match(/\?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
+        if (m) return { malId: m[1], epNum: m[2], lang: m[3] || 'dub' };
+        const p = new URLSearchParams(search);
+        const qMal = p.get('mal_id') || p.get('malId') || p.get('id');
+        const qEp  = p.get('ep') || p.get('ep_num') || p.get('episode');
+        if (qMal && qEp) return { malId: qMal, epNum: qEp, lang: p.get('lang') || 'dub' };
+        m = hash.match(/#\/?(\d+)[\/&](\d+)(?:[\/&](dub|sub))?/i);
+        if (m) return { malId: m[1], epNum: m[2], lang: m[3] || 'dub' };
         return null;
     }
 
@@ -702,10 +328,7 @@
         if (params) showPlayer(params.malId, params.epNum, params.lang);
     });
 
-    // Enter key support
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Enter') loadPlayer();
-    });
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') loadPlayer(); });
 </script>
 </body>
 </html>
