@@ -329,25 +329,56 @@
 
             if (isTxtProxy(s.url)) {
                 const iframeId = 'voeFrame_' + Math.random().toString(36).slice(2);
-                const encodedSrc = encodeURIComponent(s.url);
-                const playerPage = `https://raw.githack.com/srtfile/hi_anime_streams_scraper/main/player.html?src=${encodedSrc}`;
                 const iframe = document.createElement('iframe');
                 iframe.id = iframeId;
-                iframe.src = `https://hlsplayer.online/?url=${encodedSrc}`;
                 iframe.width = '100%';
                 iframe.height = '500px';
                 iframe.setAttribute('frameborder', '0');
                 iframe.allowFullscreen = true;
+                iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000}
+#wrap{position:relative;width:100%;height:100vh}
+video{width:100%;height:100vh;display:block;background:#000}
+#playBtn{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);cursor:pointer;border:none}
+#playBtn svg{width:70px;height:70px}
+#playBtn.hidden{display:none}
+</style></head><body>
+<div id="wrap">
+<video id="v" controls playsinline></video>
+<button id="playBtn"><svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="12" fill="rgba(124,109,250,.9)"/><path d="M9.5 7.5v9l7-4.5z" fill="#fff"/></svg></button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
+<script>
+var v=document.getElementById('v');
+var btn=document.getElementById('playBtn');
+var src=${JSON.stringify(s.url)};
+function setup(){
+  if(Hls.isSupported()){
+    var h=new Hls();
+    h.loadSource(src);
+    h.attachMedia(v);
+  }else if(v.canPlayType('application/vnd.apple.mpegurl')){
+    v.src=src;
+  }
+}
+setup();
+function tryAutoplay(){
+  var p=v.play();
+  if(p!==undefined){
+    p.then(function(){btn.classList.add('hidden');}).catch(function(){btn.classList.remove('hidden');});
+  }
+}
+v.addEventListener('loadedmetadata', tryAutoplay);
+btn.addEventListener('click', function(){
+  v.play();
+  btn.classList.add('hidden');
+});
+v.addEventListener('play', function(){ btn.classList.add('hidden'); });
+v.addEventListener('pause', function(){ btn.classList.remove('hidden'); });
+<\/script>
+</body></html>`;
                 card.appendChild(iframe);
-
-                // Also add a direct HLS player below using a srcdoc
-                const player = document.createElement('iframe');
-                player.width = '100%';
-                player.height = '500px';
-                player.setAttribute('frameborder', '0');
-                player.allowFullscreen = true;
-                player.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;background:#000}video{width:100%;height:100vh}</style></head><body><video id="v" controls autoplay playsinline></video><script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script><script>var v=document.getElementById('v');if(Hls.isSupported()){var h=new Hls({xhrSetup:function(xhr){xhr.withCredentials=false;}});h.loadSource(${JSON.stringify(s.url)});h.attachMedia(v);h.on(Hls.Events.MANIFEST_PARSED,function(){v.play();});}else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=${JSON.stringify(s.url)};v.play();}<\/script></body></html>`;
-                card.appendChild(player);
             }
 
             output.appendChild(card);
