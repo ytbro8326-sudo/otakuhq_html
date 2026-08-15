@@ -329,43 +329,25 @@
 
             if (isTxtProxy(s.url)) {
                 const iframeId = 'voeFrame_' + Math.random().toString(36).slice(2);
-                const playerHTML = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; background:#000; }
-  video { width:100%; height:100vh; display:block; }
-</style>
-</head>
-<body>
-<video id="v" controls autoplay></video>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
-<script>
-  var src = ${JSON.stringify(s.url)};
-  var video = document.getElementById('v');
-  if (Hls.isSupported()) {
-    var hls = new Hls();
-    hls.loadSource(src);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() { video.play(); });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = src;
-    video.play();
-  }
-<\/script>
-</body>
-</html>`;
-                const blob = new Blob([playerHTML], { type: 'text/html' });
-                const blobUrl = URL.createObjectURL(blob);
+                const encodedSrc = encodeURIComponent(s.url);
+                const playerPage = `https://raw.githack.com/srtfile/hi_anime_streams_scraper/main/player.html?src=${encodedSrc}`;
                 const iframe = document.createElement('iframe');
                 iframe.id = iframeId;
-                iframe.src = blobUrl;
+                iframe.src = `https://hlsplayer.online/?url=${encodedSrc}`;
                 iframe.width = '100%';
                 iframe.height = '500px';
                 iframe.setAttribute('frameborder', '0');
                 iframe.allowFullscreen = true;
                 card.appendChild(iframe);
+
+                // Also add a direct HLS player below using a srcdoc
+                const player = document.createElement('iframe');
+                player.width = '100%';
+                player.height = '500px';
+                player.setAttribute('frameborder', '0');
+                player.allowFullscreen = true;
+                player.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;background:#000}video{width:100%;height:100vh}</style></head><body><video id="v" controls autoplay playsinline></video><script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script><script>var v=document.getElementById('v');if(Hls.isSupported()){var h=new Hls({xhrSetup:function(xhr){xhr.withCredentials=false;}});h.loadSource(${JSON.stringify(s.url)});h.attachMedia(v);h.on(Hls.Events.MANIFEST_PARSED,function(){v.play();});}else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=${JSON.stringify(s.url)};v.play();}<\/script></body></html>`;
+                card.appendChild(player);
             }
 
             output.appendChild(card);
