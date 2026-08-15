@@ -328,12 +328,19 @@
             card.appendChild(urlEl);
 
             if (isTxtProxy(s.url)) {
+                const iframeId = 'voeFrame_' + Math.random().toString(36).slice(2);
                 const iframe = document.createElement('iframe');
+                iframe.id = iframeId;
                 iframe.src = s.url;
-                iframe.allowFullscreen = true;
-                iframe.setAttribute('allow', 'autoplay; fullscreen');
-                iframe.setAttribute('scrolling', 'no');
+                iframe.width = '100%';
+                iframe.height = '500px';
                 iframe.setAttribute('frameborder', '0');
+                iframe.allowFullscreen = true;
+                iframe.onload = function() {
+                    try {
+                        iframe.contentWindow.open = function() { return null; };
+                    } catch(e) {}
+                };
                 card.appendChild(iframe);
             }
 
