@@ -329,18 +329,42 @@
 
             if (isTxtProxy(s.url)) {
                 const iframeId = 'voeFrame_' + Math.random().toString(36).slice(2);
+                const playerHTML = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; background:#000; }
+  video { width:100%; height:100vh; display:block; }
+</style>
+</head>
+<body>
+<video id="v" controls autoplay></video>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
+<script>
+  var src = ${JSON.stringify(s.url)};
+  var video = document.getElementById('v');
+  if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(src);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, function() { video.play(); });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = src;
+    video.play();
+  }
+<\/script>
+</body>
+</html>`;
+                const blob = new Blob([playerHTML], { type: 'text/html' });
+                const blobUrl = URL.createObjectURL(blob);
                 const iframe = document.createElement('iframe');
                 iframe.id = iframeId;
-                iframe.src = s.url;
+                iframe.src = blobUrl;
                 iframe.width = '100%';
                 iframe.height = '500px';
                 iframe.setAttribute('frameborder', '0');
                 iframe.allowFullscreen = true;
-                iframe.onload = function() {
-                    try {
-                        iframe.contentWindow.open = function() { return null; };
-                    } catch(e) {}
-                };
                 card.appendChild(iframe);
             }
 
