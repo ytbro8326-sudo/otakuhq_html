@@ -45,18 +45,51 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         #extract-spinner { display: none; align-items: center; gap: 6px; color: #a78bfa; font-size: 12px; font-weight: 600; background: rgba(167,139,250,.12); padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(167,139,250,.25); }
 
-        /* Output */
+        /* Player area */
         #output {
             padding: 16px 14px;
+        }
+
+        .label-hint {
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 12px;
-            line-height: 1.9;
-            color: #7c6dfa;
-            word-break: break-all;
-            white-space: pre-wrap;
+            color: #555;
         }
-        #output .label { color: #555; font-size: 11px; }
-        #output .error { color: #f87171; }
+        .error { color: #f87171; font-family: monospace; font-size: 13px; }
+
+        /* Stream cards */
+        .stream-card {
+            margin-bottom: 24px;
+        }
+        .stream-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #7c6dfa;
+            margin-bottom: 8px;
+        }
+        .stream-url {
+            font-family: monospace;
+            font-size: 10px;
+            color: #444;
+            word-break: break-all;
+            margin-bottom: 6px;
+        }
+        .stream-card iframe {
+            width: 100%;
+            height: 480px;
+            border: 1px solid #2e2e42;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+        }
+        .stream-card .no-iframe-note {
+            font-size: 11px;
+            color: #666;
+            font-style: italic;
+            padding: 8px 0;
+        }
     </style>
 </head>
 <body>
@@ -87,7 +120,7 @@
     </div>
 </div>
 
-<div id="output"><span class="label">Enter MAL ID + Episode then press Play</span></div>
+<div id="output"><span class="label-hint">Enter MAL ID + Episode then press Play</span></div>
 
 <script>
     const BASE_DATASET_URL = "https://raw.githubusercontent.com/srtfile/hi_anime_streams_scraper/refs/heads/main/";
@@ -108,6 +141,19 @@
             return `https://anivexa.onrender.com/proxy?url=${encodeURIComponent(url)}&referer=https://otakuhg.site/`;
         }
         return url;
+    }
+
+    function isTxtProxy(url) {
+        if (!url) return false;
+        // Check if it's a proxy wrapping a .txt URL (not .m3u8)
+        try {
+            const u = new URL(url);
+            const inner = u.searchParams.get('url') || '';
+            const innerClean = inner.split('?')[0].toLowerCase();
+            if (innerClean.endsWith('.txt')) return true;
+        } catch(e) {}
+        // Direct .txt check
+        return url.split('?')[0].toLowerCase().endsWith('.txt');
     }
 
     async function loadAllDatasets() {
@@ -250,8 +296,61 @@
         return p;
     }
 
-    function setOutput(html) {
-        document.getElementById('output').innerHTML = html;
+    function renderStreams(streams, lang) {
+        const output = document.getElementById('output');
+
+        // Sort preferred lang first
+        const sorted = [...streams].sort((a, b) => {
+            const al = a.label.toLowerCase().includes(lang);
+            const bl = b.label.toLowerCase().includes(lang);
+            return al === bl ? 0 : al ? -1 : 1;
+        });
+
+        if (!sorted.length) {
+            output.innerHTML = '<span class="label-hint">No streams found.</span>';
+            return;
+        }
+
+        output.innerHTML = '';
+
+        sorted.forEach(s => {
+            const card = document.createElement('div');
+            card.className = 'stream-card';
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'stream-label';
+            labelEl.textContent = s.label;
+            card.appendChild(labelEl);
+
+            const urlEl = document.createElement('div');
+            urlEl.className = 'stream-url';
+            urlEl.textContent = s.url;
+            card.appendChild(urlEl);
+
+            if (isTxtProxy(s.url)) {
+                // Play .txt proxy in an iframe
+                const iframe = document.createElement('iframe');
+                iframe.src = s.url;
+                iframe.allowFullscreen = true;
+                iframe.setAttribute('allow', 'autoplay; fullscreen');
+                iframe.setAttribute('scrolling', 'no');
+                iframe.setAttribute('frameborder', '0');
+                card.appendChild(iframe);
+            } else {
+                const note = document.createElement('div');
+                note.className = 'no-iframe-note';
+                note.textContent = '⚠ Not a .txt proxy URL — skipping iframe. Open directly: ';
+                const a = document.createElement('a');
+                a.href = s.url;
+                a.target = '_blank';
+                a.style.color = '#7c6dfa';
+                a.textContent = 'open link';
+                note.appendChild(a);
+                card.appendChild(note);
+            }
+
+            output.appendChild(card);
+        });
     }
 
     async function showPlayer(malId, ep, lang) {
@@ -262,20 +361,14 @@
         document.getElementById('btn-dub').classList.toggle('active', lang === 'dub');
         document.getElementById('btn-sub').classList.toggle('active', lang === 'sub');
         document.getElementById('extract-spinner').style.display = 'flex';
-        setOutput('<span class="label">Extracting...</span>');
+        document.getElementById('output').innerHTML = '<span class="label-hint">Extracting...</span>';
         try {
             const data = await getStreams(malId, ep);
             if (tok !== _fetchToken) return;
-            if (!data.streams.length) { setOutput('<span class="label">No streams found.</span>'); return; }
-            // Sort preferred lang first
-            const sorted = [...data.streams].sort((a, b) => {
-                const al = a.label.toLowerCase().includes(lang), bl = b.label.toLowerCase().includes(lang);
-                return al === bl ? 0 : al ? -1 : 1;
-            });
-            setOutput(sorted.map(s => `<span class="label">${s.label}</span>\n${s.url}`).join('\n\n'));
+            renderStreams(data.streams, lang);
         } catch (err) {
             if (tok !== _fetchToken) return;
-            setOutput(`<span class="error">Error: ${err.message}</span>`);
+            document.getElementById('output').innerHTML = `<span class="error">Error: ${err.message}</span>`;
         } finally {
             if (tok === _fetchToken) document.getElementById('extract-spinner').style.display = 'none';
         }
