@@ -328,7 +328,6 @@
             card.appendChild(urlEl);
 
             if (isTxtProxy(s.url)) {
-                // Play .txt proxy in an iframe
                 const iframe = document.createElement('iframe');
                 iframe.src = s.url;
                 iframe.allowFullscreen = true;
@@ -336,17 +335,6 @@
                 iframe.setAttribute('scrolling', 'no');
                 iframe.setAttribute('frameborder', '0');
                 card.appendChild(iframe);
-            } else {
-                const note = document.createElement('div');
-                note.className = 'no-iframe-note';
-                note.textContent = '⚠ Not a .txt proxy URL — skipping iframe. Open directly: ';
-                const a = document.createElement('a');
-                a.href = s.url;
-                a.target = '_blank';
-                a.style.color = '#7c6dfa';
-                a.textContent = 'open link';
-                note.appendChild(a);
-                card.appendChild(note);
             }
 
             output.appendChild(card);
